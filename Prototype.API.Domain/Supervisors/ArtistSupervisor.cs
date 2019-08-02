@@ -17,9 +17,14 @@ namespace Prototype.API.Domain.Supervisors
 
         public async Task<ArtistApiModel> GetArtistByIdAsync(int id, CancellationToken ct = default)
         {
-            var artistViewModel = (await _artistRepository.GetByIdAsync(id, ct)).Convert;
-            artistViewModel.Albums = (await GetAlbumByArtistIdAsync(artistViewModel.ArtistId, ct)).ToList();
-            return artistViewModel;
+            ArtistApiModel artistApiModel = null;
+            var artist = await _artistRepository.GetByIdAsync(id, ct);
+            if (artist == null)
+                return artistApiModel;
+
+            artistApiModel = (await _artistRepository.GetByIdAsync(id, ct)).Convert;
+            artistApiModel.Albums = (await GetAlbumByArtistIdAsync(artistApiModel.ArtistId, ct)).ToList();
+            return artistApiModel;
         }
 
         public async Task<ArtistApiModel> AddArtistAsync(ArtistApiModel newArtistViewModel,

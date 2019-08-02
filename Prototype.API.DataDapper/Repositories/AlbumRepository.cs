@@ -47,19 +47,11 @@ namespace Prototype.API.DataDapper.Repositories
 
         public async Task<Album> GetByIdAsync(int id, CancellationToken ct = default)
         {
-            try
+            using (var cn = Connection)
             {
-                using (var cn = Connection)
-                {
-                    cn.Open();
-                    var album = await cn.QueryFirstOrDefaultAsync<Album>("Select * From Albums WHERE AlbumId = @Id", new { id });
-                    return album;
-                }
-            }
-            catch (Exception ex)
-            {
-                _logger.LogError(ex.Message);
-                return null;
+                cn.Open();
+                var album = await cn.QueryFirstOrDefaultAsync<Album>("Select * From Albums WHERE AlbumId = @Id", new { id });
+                return album;
             }
         }
 
@@ -79,6 +71,7 @@ namespace Prototype.API.DataDapper.Repositories
             {
                 cn.Open();
                 var albumId = await cn.InsertAsync(new Album { Title = newAlbum.Title, ArtistId = newAlbum.ArtistId });
+                
                 newAlbum.AlbumId = albumId;
             }
 
@@ -98,8 +91,9 @@ namespace Prototype.API.DataDapper.Repositories
                     return await cn.UpdateAsync(album);
                 }
             }
-            catch (Exception)
+            catch (Exception ex)
             {
+                _logger.LogError(ex.Message);
                 return false;
             }
         }
@@ -114,8 +108,9 @@ namespace Prototype.API.DataDapper.Repositories
                     return await cn.DeleteAsync(new Album { AlbumId = id });
                 }
             }
-            catch (Exception)
+            catch (Exception ex)
             {
+                _logger.LogError(ex.Message);
                 return false;
             }
         }

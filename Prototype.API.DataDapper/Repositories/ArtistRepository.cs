@@ -79,8 +79,9 @@ namespace Prototype.API.DataDapper.Repositories
                     return await cn.UpdateAsync(artist);
                 }
             }
-            catch (Exception)
+            catch (Exception ex)
             {
+                _logger.LogError(ex.Message);
                 return false;
             }
         }
@@ -95,8 +96,9 @@ namespace Prototype.API.DataDapper.Repositories
                     return await cn.DeleteAsync(new Artist { ArtistId = id });
                 }
             }
-            catch (Exception)
+            catch (Exception ex)
             {
+                _logger.LogError(ex.Message);
                 return false;
             }
         }
