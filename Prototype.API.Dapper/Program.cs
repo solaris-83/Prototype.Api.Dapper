@@ -19,6 +19,6 @@ namespace Prototype.API.Dapper
 
         public static IWebHostBuilder CreateWebHostBuilder(string[] args) =>
             WebHost.CreateDefaultBuilder(args)
-                .UseStartup<GenreValidator>();
+                .UseStartup<Startup>();
     }
 }

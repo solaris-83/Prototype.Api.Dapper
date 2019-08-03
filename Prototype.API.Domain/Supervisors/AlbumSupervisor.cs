@@ -16,7 +16,6 @@ namespace Prototype.API.Domain.Supervisors
 
         public async Task<AlbumApiModel> GetAlbumByIdAsync(int id, CancellationToken ct = default)
         {
-            //var albumApiModel = (await _albumRepository.GetByIdAsync(id, ct)).Convert;
             AlbumApiModel albumApiModel = null;
             var album = await _albumRepository.GetByIdAsync(id, ct);
             if (album == null)

@@ -1,10 +1,7 @@
 ﻿using System;
-using System.Collections.Generic;
 using System.IO;
-using System.Linq;
 using System.Reflection;
-using System.Threading.Tasks;
-using FluentValidation.AspNetCore;
+//using FluentValidation.AspNetCore;
 using Microsoft.AspNetCore.Builder;
 using Microsoft.AspNetCore.Hosting;
 using Microsoft.AspNetCore.Mvc;
@@ -16,9 +13,9 @@ using Swashbuckle.AspNetCore.Swagger;
 
 namespace Prototype.API.Dapper
 {
-    public class GenreValidator
+    public class Startup
     {
-        public GenreValidator(IConfiguration configuration)
+        public Startup(IConfiguration configuration)
         {
             Configuration = configuration;
         }
@@ -30,8 +27,10 @@ namespace Prototype.API.Dapper
         {
             services.AddMemoryCache();
             services.AddResponseCaching();
-            services.AddMvc()//.AddFluentValidation(fvc => fvc.RegisterValidatorsFromAssemblyContaining<GenreValidator>())
-            .SetCompatibilityVersion(CompatibilityVersion.Version_2_2);
+
+            // Validators
+            //services.AddValidators();
+            services.AddMvc().SetCompatibilityVersion(CompatibilityVersion.Version_2_2); //.AddFluentValidation();
 
             services.ConfigureSupervisor()
                 .ConfigureRepositories()
@@ -40,11 +39,20 @@ namespace Prototype.API.Dapper
                 .AddConnectionProvider(Configuration)
                 .AddAppSettings(Configuration);
 
-            services.AddSwaggerGen(s => s.SwaggerDoc("v1", new Info
+            services.AddSwaggerGen(s =>
             {
-                Title = "Chinook Reduced API",
-                Description = "Chinook Small Music Store API"
-            }));
+                s.SwaggerDoc("v1", new Info()
+                {
+                    Title = "Chinook Reduced API",
+                    Version = "v1",
+                    Description = "Chinook Reduced Music Store API"
+                });
+
+                var xmlFile = $"{Assembly.GetExecutingAssembly().GetName().Name}.xml";
+                var xmlPath = Path.Combine(AppContext.BaseDirectory, xmlFile);
+                s.IncludeXmlComments(xmlPath);
+                //s.AddFluentValidationRules();
+            });
             
         }
 

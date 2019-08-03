@@ -1,8 +1,11 @@
-﻿using Microsoft.Extensions.DependencyInjection;
+﻿using FluentValidation;
+using Microsoft.Extensions.DependencyInjection;
 using Microsoft.Extensions.Logging;
 using Newtonsoft.Json;
 using Prototype.API.DataDapper.Repositories;
+using Prototype.API.Domain.ApiModels;
 using Prototype.API.Domain.Supervisors;
+using Prototype.API.Domain.Validators;
 
 namespace Prototype.API.Dapper.Configurations
 {
@@ -12,14 +15,6 @@ namespace Prototype.API.Dapper.Configurations
         {
             services.AddScoped<IAlbumRepository, AlbumRepository>()
                     .AddScoped<IArtistRepository, ArtistRepository>();
-            //    .AddScoped<ICustomerRepository, CustomerRepository>()
-            //    .AddScoped<IEmployeeRepository, EmployeeRepository>()
-            //    .AddScoped<IGenreRepository, GenreRepository>()
-            //    .AddScoped<IInvoiceRepository, InvoiceRepository>()
-            //    .AddScoped<IInvoiceLineRepository, InvoiceLineRepository>()
-            //    .AddScoped<IMediaTypeRepository, MediaTypeRepository>()
-            //    .AddScoped<IPlaylistRepository, PlaylistRepository>()
-            //    .AddScoped<ITrackRepository, TrackRepository>();
 
             return services;
         }
@@ -62,5 +57,13 @@ namespace Prototype.API.Dapper.Configurations
 
             return services;
         }
+
+        //public static IServiceCollection AddValidators(this IServiceCollection services)
+        //{
+        //    services.AddSingleton<IValidator<AlbumApiModel>, AlbumValidator>();
+        //    services.AddSingleton<IValidator<ArtistApiModel>, ArtistValidator>();
+        //    // .....
+        //    return services;
+        //}
     }
 }
