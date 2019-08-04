@@ -15,6 +15,8 @@ using System.Threading.Tasks;
 namespace Prototype.API.Dapper.Controllers
 {
     [Route("v1/api/[controller]")]
+    [Produces("application/json")]
+    [ApiController]
     public class ArtistsController : Controller
     {
         private readonly ISupervisor _supervisor;
@@ -25,8 +27,7 @@ namespace Prototype.API.Dapper.Controllers
             _supervisor = supervisor;
             _logger = logger;
         }
-
-        [AuthorizeAttribute]
+        
         [HttpGet]
         [Produces(typeof(List<ArtistApiModel>))]
         [ProducesResponseType(StatusCodes.Status200OK)]
