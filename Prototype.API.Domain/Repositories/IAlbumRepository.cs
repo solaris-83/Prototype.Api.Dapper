@@ -8,7 +8,7 @@ namespace Prototype.API.Domain.Supervisors
 {
     public interface IAlbumRepository : IDisposable
     {
-        Task<List<Album>> GetAllAsync(CancellationToken ct = default);
+        Task<IEnumerable<Album>> GetAllAsync(int offset, int limit, CancellationToken ct = default);
         Task<Album> GetByIdAsync(int id, CancellationToken ct = default);
         Task<List<Album>> GetByArtistIdAsync(int id, CancellationToken ct = default);
         Task<Album> AddAsync(Album newAlbum, CancellationToken ct = default);

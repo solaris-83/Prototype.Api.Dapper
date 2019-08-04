@@ -7,7 +7,7 @@ Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "Prototype.API.Dapper", "Pro
 EndProject
 Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "Prototype.API.Domain", "Prototype.API.Domain\Prototype.API.Domain.csproj", "{39A193A2-69BF-4800-8CE8-BDCF4BD21A28}"
 EndProject
-Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "Prototype.API.DataDapper", "Prototype.API.DataDapper\Prototype.API.DataDapper.csproj", "{AA00B490-B2B4-4FFD-8437-C4396492D710}"
+Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "Prototype.API.DataDapper", "Prototype.API.DataDapper\Prototype.API.DataDapper.csproj", "{AA00B490-B2B4-4FFD-8437-C4396492D710}"
 EndProject
 Global
 	GlobalSection(SolutionConfigurationPlatforms) = preSolution

@@ -1,4 +1,5 @@
-﻿using Microsoft.AspNetCore.Http;
+﻿using Microsoft.AspNetCore.Authorization;
+using Microsoft.AspNetCore.Http;
 using Microsoft.AspNetCore.Mvc;
 using Microsoft.Extensions.Logging;
 using Newtonsoft.Json;
@@ -25,15 +26,30 @@ namespace Prototype.API.Dapper.Controllers
             _logger = logger;
         }
 
+        [AuthorizeAttribute]
         [HttpGet]
         [Produces(typeof(List<ArtistApiModel>))]
         [ProducesResponseType(StatusCodes.Status200OK)]
-        [ProducesResponseType(StatusCodes.Status500InternalServerError)]
-        public async Task<ActionResult<List<ArtistApiModel>>> Get(CancellationToken ct = default)
+        [ProducesResponseType(typeof(ErrorApiModel), StatusCodes.Status500InternalServerError)]
+        public async Task<ActionResult<List<ArtistApiModel>>> Get([FromQuery] PagingApiModel paging, CancellationToken ct = default)
         {
+            if (paging.Offset == 0)
+            {
+                var msg = "Offset value must be positive";
+                _logger.LogError(msg);
+                return BadRequest(new ErrorApiModel(msg));
+            }
+
+            if (paging.Limit == 0)
+            {
+                var msg = "Limit value must be positive";
+                _logger.LogError(msg);
+                return BadRequest(new ErrorApiModel(msg));
+            }
+
             try
             {
-                return new ObjectResult(await _supervisor.GetAllArtistAsync(ct));
+                return new ObjectResult(await _supervisor.GetAllArtistAsync(paging, ct));
             }
             catch (Exception ex)
             {
@@ -44,8 +60,8 @@ namespace Prototype.API.Dapper.Controllers
         [HttpGet("{id}")]
         [Produces(typeof(ArtistApiModel))]
         [ProducesResponseType(StatusCodes.Status200OK)]
-        [ProducesResponseType(StatusCodes.Status404NotFound)]
-        [ProducesResponseType(StatusCodes.Status500InternalServerError)]
+        [ProducesResponseType(typeof(ErrorApiModel), StatusCodes.Status404NotFound)]
+        [ProducesResponseType(typeof(ErrorApiModel), StatusCodes.Status500InternalServerError)]
         public async Task<ActionResult<ArtistApiModel>> Get(int id, CancellationToken ct = default)
         {
             try
@@ -67,8 +83,8 @@ namespace Prototype.API.Dapper.Controllers
         [HttpPost]
         [Produces(typeof(ArtistApiModel))]
         [ProducesResponseType(StatusCodes.Status201Created)]
-        [ProducesResponseType(StatusCodes.Status400BadRequest)]
-        [ProducesResponseType(StatusCodes.Status500InternalServerError)]
+        [ProducesResponseType(typeof(ErrorApiModel), StatusCodes.Status400BadRequest)] //TODO Handle ErrrorApiModel
+        [ProducesResponseType(typeof(ErrorApiModel), StatusCodes.Status500InternalServerError)]
         public async Task<ActionResult<ArtistApiModel>> Post([FromBody] ArtistApiModel input,
             CancellationToken ct = default)
         {
@@ -88,8 +104,8 @@ namespace Prototype.API.Dapper.Controllers
         [HttpPut("{id}")]
         [Produces(typeof(ArtistApiModel))]
         [ProducesResponseType(StatusCodes.Status200OK)]
-        [ProducesResponseType(StatusCodes.Status404NotFound)]
-        [ProducesResponseType(StatusCodes.Status500InternalServerError)]
+        [ProducesResponseType(typeof(ErrorApiModel), StatusCodes.Status404NotFound)]
+        [ProducesResponseType(typeof(ErrorApiModel), StatusCodes.Status500InternalServerError)]
         public async Task<ActionResult<ArtistApiModel>> Put(int id, [FromBody] ArtistApiModel input,
             CancellationToken ct = default)
         {
@@ -120,11 +136,11 @@ namespace Prototype.API.Dapper.Controllers
             }
         }
 
-        [HttpDelete("{id}")]  //TODO: Improve status codes. Avoid using 500 for reference key violation errors?
+        [HttpDelete("{id}")]  //TODO Improve status codes. Avoid using 500 for reference key violation errors?
         [Produces(typeof(void))]
-        [ProducesResponseType(StatusCodes.Status204NoContent)]
-        [ProducesResponseType(StatusCodes.Status404NotFound)]
-        [ProducesResponseType(StatusCodes.Status500InternalServerError)]
+        [ProducesResponseType(StatusCodes.Status200OK)]
+        [ProducesResponseType(typeof(ErrorApiModel), StatusCodes.Status404NotFound)]
+        [ProducesResponseType(typeof(ErrorApiModel), StatusCodes.Status500InternalServerError)]
         public async Task<ActionResult> Delete(int id, CancellationToken ct = default)
         {
             try
@@ -136,7 +152,7 @@ namespace Prototype.API.Dapper.Controllers
 
                 if (await _supervisor.DeleteArtistAsync(id, ct))
                 {
-                    return NoContent();
+                    return Ok();
                 }
 
                 return StatusCode(500);

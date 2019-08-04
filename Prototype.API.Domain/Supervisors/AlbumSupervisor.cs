@@ -1,5 +1,6 @@
 ﻿using Prototype.API.Domain.ApiModels;
 using Prototype.API.Domain.Extensions;
+using System;
 using System.Collections.Generic;
 using System.Threading;
 using System.Threading.Tasks;
@@ -8,10 +9,13 @@ namespace Prototype.API.Domain.Supervisors
 {
     public partial class Supervisor
     {
-        public async Task<IEnumerable<AlbumApiModel>> GetAllAlbumAsync(CancellationToken ct = default)
+        public async Task<IEnumerable<AlbumApiModel>> GetAllAlbumAsync(PagingApiModel paging, CancellationToken ct = default)
         {
-            var albums = await _albumRepository.GetAllAsync(ct);
+            
+            var albums = await _albumRepository.GetAllAsync(paging.Offset, paging.Limit, ct);
+
             return albums.ConvertAll();
+            
         }
 
         public async Task<AlbumApiModel> GetAlbumByIdAsync(int id, CancellationToken ct = default)
@@ -44,8 +48,9 @@ namespace Prototype.API.Domain.Supervisors
 
             var album = newAlbumApiModel.Convert;
 
-            album = await _albumRepository.AddAsync(album, ct);
+            album = await _albumRepository.AddAsync(album, ct); //TODO handle exceptions
             newAlbumApiModel.AlbumId = album.AlbumId;
+            newAlbumApiModel.Success = true;
             return newAlbumApiModel;
         }
 

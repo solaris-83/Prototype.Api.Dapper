@@ -35,13 +35,14 @@ namespace Prototype.API.DataDapper.Repositories
         private async Task<bool> ArtistExists(int id, CancellationToken ct = default) =>
             await Connection.ExecuteScalarAsync<bool>("select count(1) from Artists where ArtistId = @id", new { id });
 
-        public async Task<List<Artist>> GetAllAsync(CancellationToken ct = default)
+        public async Task<IEnumerable<Artist>> GetAllAsync(int offset, int limit, CancellationToken ct = default)
         {
             using (IDbConnection cn = Connection)
             {
                 cn.Open();
-                var artists = await Connection.QueryAsync<Artist>("Select * From Artists");
-                return artists.ToList();
+                var sql = string.Format("Select * From Artists Order by ArtistId OFFSET {0} ROWS FETCH NEXT {1} ROWS ONLY", (offset - 1) *limit, limit);
+                var artists = await Connection.QueryAsync<Artist>(sql);
+                return artists; //.ToList();
             }
         }
 

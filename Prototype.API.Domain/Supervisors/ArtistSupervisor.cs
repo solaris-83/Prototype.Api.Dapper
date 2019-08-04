@@ -9,9 +9,9 @@ namespace Prototype.API.Domain.Supervisors
 {
     public partial class Supervisor
     {
-        public async Task<IEnumerable<ArtistApiModel>> GetAllArtistAsync(CancellationToken ct = default)
+        public async Task<IEnumerable<ArtistApiModel>> GetAllArtistAsync(PagingApiModel paging, CancellationToken ct = default)
         {
-            var artists = await _artistRepository.GetAllAsync(ct);
+            var artists = await _artistRepository.GetAllAsync(paging.Offset,paging.Limit, ct);
             return artists.ConvertAll();
         }
 

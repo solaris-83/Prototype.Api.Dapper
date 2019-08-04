@@ -8,7 +8,7 @@ namespace Prototype.API.Domain.Supervisors
     public interface ISupervisor
     {
 
-        Task<IEnumerable<AlbumApiModel>> GetAllAlbumAsync(CancellationToken ct = default);
+        Task<IEnumerable<AlbumApiModel>> GetAllAlbumAsync(PagingApiModel paging, CancellationToken ct = default);
         Task<AlbumApiModel> GetAlbumByIdAsync(int id, CancellationToken ct = default);
         Task<IEnumerable<AlbumApiModel>> GetAlbumByArtistIdAsync(int id, CancellationToken ct = default);
 
@@ -17,7 +17,7 @@ namespace Prototype.API.Domain.Supervisors
 
         Task<bool> UpdateAlbumAsync(AlbumApiModel albumViewModel, CancellationToken ct = default);
         Task<bool> DeleteAlbumAsync(int id, CancellationToken ct = default);
-        Task<IEnumerable<ArtistApiModel>> GetAllArtistAsync(CancellationToken ct = default);
+        Task<IEnumerable<ArtistApiModel>> GetAllArtistAsync(PagingApiModel paging, CancellationToken ct = default);
         Task<ArtistApiModel> GetArtistByIdAsync(int id, CancellationToken ct = default);
 
         Task<ArtistApiModel> AddArtistAsync(ArtistApiModel newArtistViewModel,

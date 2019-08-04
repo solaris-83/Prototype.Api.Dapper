@@ -5,7 +5,6 @@ using Newtonsoft.Json;
 using Prototype.API.DataDapper.Repositories;
 using Prototype.API.Domain.ApiModels;
 using Prototype.API.Domain.Supervisors;
-using Prototype.API.Domain.Validators;
 
 namespace Prototype.API.Dapper.Configurations
 {

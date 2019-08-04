@@ -2,6 +2,7 @@
 using Dapper.Contrib.Extensions;
 using Microsoft.Extensions.Logging;
 using Prototype.API.Domain;
+using Prototype.API.Domain.ApiModels;
 using Prototype.API.Domain.Entities;
 using Prototype.API.Domain.Supervisors;
 using System;
@@ -35,13 +36,21 @@ namespace Prototype.API.DataDapper.Repositories
         private async Task<bool> AlbumExists(int id, CancellationToken ct = default) =>
             await Connection.ExecuteScalarAsync<bool>("select count(1) from Albums where AlbumId = @id", new { id });
 
-        public async Task<List<Album>> GetAllAsync(CancellationToken ct = default)
+        public async Task<IEnumerable<Album>> GetAllAsync(int offset, int limit, CancellationToken ct = default)
         {
-            using (IDbConnection cn = Connection)
+            try
             {
-                cn.Open();
-                var albums = await Connection.QueryAsync<Album>("Select * From Albums");
-                return albums.ToList();
+                using (IDbConnection cn = Connection)
+                {
+                    cn.Open();
+                    var sql = String.Format("Select * From Albums ORDER BY AlbumId OFFSET {0} ROWS FETCH NEXT {1} ROWS ONLY", (offset - 1) * limit, limit);
+                    var albums = await Connection.QueryAsync<Album>(sql);
+                    return albums; //.ToList();
+                }
+            }
+            catch(Exception ex)
+            {
+                throw ex;
             }
         }
 
@@ -70,8 +79,8 @@ namespace Prototype.API.DataDapper.Repositories
             using (var cn = Connection)
             {
                 cn.Open();
-                var albumId = await cn.InsertAsync(new Album { Title = newAlbum.Title, ArtistId = newAlbum.ArtistId });
-                
+                var albumId = await cn.InsertAsync(new Album { Title = newAlbum.Title, ArtistId = newAlbum.ArtistId }); //TODO handle exceptions
+
                 newAlbum.AlbumId = albumId;
             }
 

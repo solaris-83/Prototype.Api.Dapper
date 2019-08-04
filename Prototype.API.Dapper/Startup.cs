@@ -1,7 +1,6 @@
 ﻿using System;
 using System.IO;
 using System.Reflection;
-//using FluentValidation.AspNetCore;
 using Microsoft.AspNetCore.Builder;
 using Microsoft.AspNetCore.Hosting;
 using Microsoft.AspNetCore.Mvc;
@@ -9,6 +8,7 @@ using Microsoft.Extensions.Configuration;
 using Microsoft.Extensions.DependencyInjection;
 using Microsoft.Extensions.Logging;
 using Prototype.API.Dapper.Configurations;
+using Prototype.API.Dapper.Controllers.Config;
 using Swashbuckle.AspNetCore.Swagger;
 
 namespace Prototype.API.Dapper
@@ -29,9 +29,13 @@ namespace Prototype.API.Dapper
             services.AddResponseCaching();
 
             // Validators
-            //services.AddValidators();
-            services.AddMvc().SetCompatibilityVersion(CompatibilityVersion.Version_2_2); //.AddFluentValidation();
-
+            //services.AddValidators(); //TODO 1) Fix validation unhandled exception otherwise 2) Handle InvalidModelStateResponseFactory via data annotations
+            services.AddMvc().SetCompatibilityVersion(CompatibilityVersion.Version_2_2)//.AddFluentValidation()
+                    .ConfigureApiBehaviorOptions(options =>
+                    {
+                        // Adds a custom error response factory when ModelState is invalid
+                        options.InvalidModelStateResponseFactory = InvalidModelStateResponseFactory.ProduceErrorResponse;
+                    });
             services.ConfigureSupervisor()
                 .ConfigureRepositories()
                 .AddMiddleware()

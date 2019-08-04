@@ -29,16 +29,30 @@ namespace Prototype.API.Dapper.Controllers
         /// <summary>
         /// Retrieves all albums.
         /// </summary>
-        /// <param name="ct"></param>
+        /// <param name="paging">Specifiy offset and limit for data.</param>
         /// <returns>Albums lists.</returns>
         [HttpGet]
         [ProducesResponseType(typeof(List<AlbumApiModel>), StatusCodes.Status200OK)]
-        [ProducesResponseType(StatusCodes.Status500InternalServerError)]
-        public async Task<ActionResult<List<AlbumApiModel>>> Get(CancellationToken ct = default)
+        [ProducesResponseType(typeof(ErrorApiModel), StatusCodes.Status500InternalServerError)]
+        public async Task<ActionResult<List<AlbumApiModel>>> Get([FromQuery] PagingApiModel paging, CancellationToken ct = default)
         {
+            if (paging.Offset == 0) //TODO Move to validation handler when fixed/developed
+            {
+                var msg = "Offset value must be positive";
+                _logger.LogError(msg);
+                return BadRequest(new ErrorApiModel(msg));
+            }
+
+            if (paging.Limit == 0)
+            {
+                var msg = "Limit value must be positive";
+                _logger.LogError(msg);
+                return BadRequest(new ErrorApiModel(msg));
+            }
+
             try
             {
-                return new ObjectResult(await _supervisor.GetAllAlbumAsync(ct));
+                return new ObjectResult(await _supervisor.GetAllAlbumAsync(paging, ct));
             }
             catch (Exception ex)
             {
@@ -54,8 +68,8 @@ namespace Prototype.API.Dapper.Controllers
         /// <returns>Selected album.</returns>
         [HttpGet("{id}")]
         [ProducesResponseType(typeof(AlbumApiModel), StatusCodes.Status200OK)]
-        [ProducesResponseType(StatusCodes.Status404NotFound)]
-        [ProducesResponseType(StatusCodes.Status500InternalServerError)]
+        [ProducesResponseType(typeof(ErrorApiModel), StatusCodes.Status404NotFound)]
+        [ProducesResponseType(typeof(ErrorApiModel), StatusCodes.Status500InternalServerError)]
         public async Task<ActionResult<AlbumApiModel>> Get(int id, CancellationToken ct = default)
         {
             try
@@ -82,8 +96,8 @@ namespace Prototype.API.Dapper.Controllers
         /// <returns>Selected album.</returns>
         [HttpGet("artists/{id}")]
         [ProducesResponseType(typeof(List<AlbumApiModel>), StatusCodes.Status200OK)]
-        [ProducesResponseType(StatusCodes.Status404NotFound)]
-        [ProducesResponseType(StatusCodes.Status500InternalServerError)]
+        [ProducesResponseType(typeof(ErrorApiModel), StatusCodes.Status404NotFound)]
+        [ProducesResponseType(typeof(ErrorApiModel), StatusCodes.Status500InternalServerError)]
         public async Task<ActionResult<List<AlbumApiModel>>> GetByArtistId(int id, CancellationToken ct = default)
         {
             try
@@ -111,8 +125,8 @@ namespace Prototype.API.Dapper.Controllers
         /// <returns>Response for the request.</returns>
         [HttpPost]
         [ProducesResponseType(typeof(AlbumApiModel), StatusCodes.Status201Created)]
-        [ProducesResponseType(StatusCodes.Status400BadRequest)]
-        [ProducesResponseType(StatusCodes.Status500InternalServerError)]
+        [ProducesResponseType(typeof(ErrorApiModel), StatusCodes.Status400BadRequest)]
+        [ProducesResponseType(typeof(ErrorApiModel), StatusCodes.Status500InternalServerError)]
 
         public async Task<ActionResult<AlbumApiModel>> Post([FromBody] AlbumApiModel input,
             CancellationToken ct = default)
@@ -121,12 +135,18 @@ namespace Prototype.API.Dapper.Controllers
             {
                 if (input == null)
                 {
-                    _logger.LogError($"{0}", StatusCodes.Status400BadRequest);
-                    return BadRequest();
+                    var message = "Data input is null";
+                    _logger.LogError($"{0} {1}", StatusCodes.Status400BadRequest, message);
+                    return BadRequest(new ErrorApiModel(message));
                 }
-                    
 
-                return StatusCode(201, await _supervisor.AddAlbumAsync(input, ct));
+                var result = await _supervisor.AddAlbumAsync(input, ct);
+                if (!result.Success)
+                {
+                    return BadRequest(new ErrorApiModel(result.Message));
+                }
+
+                return StatusCode(201, result);
             }
             catch (Exception ex)
             {
@@ -145,17 +165,24 @@ namespace Prototype.API.Dapper.Controllers
         [HttpPut("{id}")]
         [Produces(typeof(AlbumApiModel))]
         [ProducesResponseType(StatusCodes.Status200OK)]
-        [ProducesResponseType(StatusCodes.Status404NotFound)]
-        [ProducesResponseType(StatusCodes.Status500InternalServerError)]
+        [ProducesResponseType(typeof(ErrorApiModel), StatusCodes.Status404NotFound)]
+        [ProducesResponseType(typeof(ErrorApiModel), StatusCodes.Status500InternalServerError)]
         public async Task<ActionResult<AlbumApiModel>> Put(int id, [FromBody] AlbumApiModel input,
             CancellationToken ct = default)
         {
             try
             {
+                //if (input == null)
+                //{
+                //    _logger.LogError($"{0}", StatusCodes.Status400BadRequest);
+                //    return BadRequest();
+                //}
+
                 if (input == null)
                 {
-                    _logger.LogError($"{0}", StatusCodes.Status400BadRequest);
-                    return BadRequest();
+                    var message = "Data input is null";
+                    _logger.LogError($"{0} {1}", StatusCodes.Status400BadRequest, message);
+                    return BadRequest(new ErrorApiModel(message));
                 }
 
                 if (await _supervisor.GetAlbumByIdAsync(id, ct) == null)
@@ -190,9 +217,9 @@ namespace Prototype.API.Dapper.Controllers
         /// <param name="ct"></param>
         /// <returns>Response for the request.</returns>
         [HttpDelete("{id}")]
-        [ProducesResponseType(typeof(void), StatusCodes.Status204NoContent)]
-        [ProducesResponseType(StatusCodes.Status404NotFound)]
-        [ProducesResponseType(StatusCodes.Status500InternalServerError)]
+        [ProducesResponseType(typeof(void), StatusCodes.Status200OK)]
+        [ProducesResponseType(typeof(ErrorApiModel), StatusCodes.Status404NotFound)]
+        [ProducesResponseType(typeof(ErrorApiModel), StatusCodes.Status500InternalServerError)]
         public async Task<ActionResult> DeleteAsync(int id, CancellationToken ct = default)
         {
             try
@@ -204,7 +231,7 @@ namespace Prototype.API.Dapper.Controllers
 
                 if (await _supervisor.DeleteAlbumAsync(id, ct))
                 {
-                    return NoContent();
+                    return Ok();
                 }
 
                 return StatusCode(500);
