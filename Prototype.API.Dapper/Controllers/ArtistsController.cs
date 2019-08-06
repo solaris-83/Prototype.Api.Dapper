@@ -48,14 +48,9 @@ namespace Prototype.API.Dapper.Controllers
                 return BadRequest(new ErrorApiModel(msg));
             }
 
-            try
-            {
-                return new ObjectResult(await _supervisor.GetAllArtistAsync(paging, ct));
-            }
-            catch (Exception ex)
-            {
-                return StatusCode(500, ex);
-            }
+           
+            return new ObjectResult(await _supervisor.GetAllArtistAsync(paging, ct));
+           
         }
 
         [HttpGet("{id}")]

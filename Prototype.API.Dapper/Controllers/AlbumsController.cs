@@ -1,4 +1,5 @@
-﻿using Microsoft.AspNetCore.Http;
+﻿using Microsoft.AspNetCore.Authorization;
+using Microsoft.AspNetCore.Http;
 using Microsoft.AspNetCore.Mvc;
 using Microsoft.Extensions.Logging;
 using Newtonsoft.Json;
@@ -33,6 +34,7 @@ namespace Prototype.API.Dapper.Controllers
         /// <returns>Albums lists.</returns>
         [HttpGet]
         [ProducesResponseType(typeof(List<AlbumApiModel>), StatusCodes.Status200OK)]
+        [ProducesResponseType(typeof(List<AlbumApiModel>), StatusCodes.Status400BadRequest)]
         [ProducesResponseType(typeof(ErrorApiModel), StatusCodes.Status500InternalServerError)]
         public async Task<ActionResult<List<AlbumApiModel>>> Get([FromQuery] PagingApiModel paging, CancellationToken ct = default)
         {
@@ -90,7 +92,7 @@ namespace Prototype.API.Dapper.Controllers
         }
 
         /// <summary>
-        /// Retrieves an album given an Artist Id.
+        /// Retrieves all the albums given an Artist Id.
         /// </summary>
         /// <param name="ct"></param>
         /// <returns>Selected album.</returns>

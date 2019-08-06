@@ -1,8 +1,12 @@
 ﻿using Dapper;
 using Dapper.Contrib.Extensions;
+using Microsoft.Data.Sqlite;
+using Microsoft.Extensions.Configuration;
 using Microsoft.Extensions.Logging;
+using Prototype.API.DataDapper.StaticQueries;
 using Prototype.API.Domain;
 using Prototype.API.Domain.ApiModels;
+using Prototype.API.Domain.DbInfoConnection;
 using Prototype.API.Domain.Entities;
 using Prototype.API.Domain.Supervisors;
 using System;
@@ -26,7 +30,16 @@ namespace Prototype.API.DataDapper.Repositories
             _logger = logger;
         }
 
-        private IDbConnection Connection => new SqlConnection(_dbInfo.ConnectionStrings);
+        private IDbConnection Connection
+        {
+            get
+            {
+                if (_dbInfo.DBConnectionType == DBConnectionEnum.SQLite)
+                    return new SqliteConnection(_dbInfo.ConnectionStrings);
+                else
+                    return new SqlConnection(_dbInfo.ConnectionStrings);
+            }
+        }
 
         public void Dispose()
         {
@@ -42,10 +55,11 @@ namespace Prototype.API.DataDapper.Repositories
             {
                 using (IDbConnection cn = Connection)
                 {
+                    
                     cn.Open();
-                    var sql = String.Format("Select * From Albums ORDER BY AlbumId OFFSET {0} ROWS FETCH NEXT {1} ROWS ONLY", (offset - 1) * limit, limit);
+                    var sql = _dbInfo.DBConnectionType == DBConnectionEnum.SQLite? string.Format(SQLiteQueries.SELECT_ALL_ALBUMS, (offset - 1) * limit, limit) : string.Format(SQLServerQueries.SELECT_ALL_ALBUMS, (offset - 1) * limit, limit);
                     var albums = await Connection.QueryAsync<Album>(sql);
-                    return albums; //.ToList();
+                    return albums;
                 }
             }
             catch(Exception ex)
@@ -59,7 +73,7 @@ namespace Prototype.API.DataDapper.Repositories
             using (var cn = Connection)
             {
                 cn.Open();
-                var album = await cn.QueryFirstOrDefaultAsync<Album>("Select * From Albums WHERE AlbumId = @Id", new { id });
+                var album = await cn.QueryFirstOrDefaultAsync<Album>("Select * From Albums WHERE AlbumId = @id", new { id });
                 return album;
             }
         }
@@ -69,7 +83,7 @@ namespace Prototype.API.DataDapper.Repositories
             using (var cn = Connection)
             {
                 cn.Open();
-                var albums = await cn.QueryAsync<Album>("Select * From Albums WHERE ArtistId = @Id", new { id });
+                var albums = await cn.QueryAsync<Album>("Select * From Albums WHERE ArtistId = @id", new { id });
                 return albums.ToList();
             }
         }

@@ -1,7 +1,9 @@
 ﻿using Dapper;
 using Dapper.Contrib.Extensions;
+using Microsoft.Data.Sqlite;
 using Microsoft.Extensions.Logging;
-using Prototype.API.Domain;
+using Prototype.API.DataDapper.StaticQueries;
+using Prototype.API.Domain.DbInfoConnection;
 using Prototype.API.Domain.Entities;
 using Prototype.API.Domain.Supervisors;
 using System;
@@ -25,7 +27,7 @@ namespace Prototype.API.DataDapper.Repositories
             _logger = logger;
         }
 
-        private IDbConnection Connection => new SqlConnection(_dbInfo.ConnectionStrings);
+        private IDbConnection Connection => new SqliteConnection(_dbInfo.ConnectionStrings);
 
         public void Dispose()
         {
@@ -40,9 +42,9 @@ namespace Prototype.API.DataDapper.Repositories
             using (IDbConnection cn = Connection)
             {
                 cn.Open();
-                var sql = string.Format("Select * From Artists Order by ArtistId OFFSET {0} ROWS FETCH NEXT {1} ROWS ONLY", (offset - 1) *limit, limit);
+                var sql = _dbInfo.DBConnectionType == DBConnectionEnum.SQLite ? string.Format(SQLiteQueries.SELECT_ALL_ARTISTS, (offset - 1) * limit, limit) : string.Format(SQLServerQueries.SELECT_ALL_ARTISTS, (offset - 1) * limit, limit);
                 var artists = await Connection.QueryAsync<Artist>(sql);
-                return artists; //.ToList();
+                return artists;
             }
         }
 
@@ -51,7 +53,7 @@ namespace Prototype.API.DataDapper.Repositories
             using (var cn = Connection)
             {
                 cn.Open();
-                return await cn.QueryFirstOrDefaultAsync<Artist>("Select * From Artists WHERE ArtistId = @Id", new { id });
+                return await cn.QueryFirstOrDefaultAsync<Artist>("Select * From Artists WHERE ArtistId = @id", new { id });
             }
         }
 

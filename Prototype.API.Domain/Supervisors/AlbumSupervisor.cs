@@ -11,10 +11,16 @@ namespace Prototype.API.Domain.Supervisors
     {
         public async Task<IEnumerable<AlbumApiModel>> GetAllAlbumAsync(PagingApiModel paging, CancellationToken ct = default)
         {
-            
-            var albums = await _albumRepository.GetAllAsync(paging.Offset, paging.Limit, ct);
+            try
+            {
+                var albums = await _albumRepository.GetAllAsync(paging.Offset, paging.Limit, ct);
 
-            return albums.ConvertAll();
+                return albums.ConvertAll();
+            }
+            catch (Exception ex)
+            {
+                throw ex;
+            }
             
         }
 
