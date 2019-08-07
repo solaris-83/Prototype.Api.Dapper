@@ -13,9 +13,7 @@ namespace Prototype.API.Domain.Supervisors
         //=== Albums 
         Task<IEnumerable<Album>> GetAllAlbumAsync(PagingApiModel paging);
         Task<Album> GetAlbumByIdAsync(int id);
-
-        //Task<IEnumerable<Album>> GetAlbumByArtistIdAsync(int id);
-
+        Task<IEnumerable<Album>> GetAlbumByArtistIdAsync(int id);
         Task<AlbumResponse> AddAlbumAsync(Album newAlbum);
         Task<AlbumResponse> UpdateAlbumAsync(int id, Album album);
         Task<AlbumResponse> DeleteAlbumAsync(int id);

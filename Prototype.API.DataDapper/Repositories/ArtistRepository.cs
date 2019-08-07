@@ -27,7 +27,16 @@ namespace Prototype.API.DataDapper.Repositories
             _logger = logger;
         }
 
-        private IDbConnection Connection => new SqliteConnection(_dbInfo.ConnectionStrings);
+        private IDbConnection Connection
+        {
+            get
+            {
+                if (_dbInfo.DBConnectionType == DBConnectionEnum.SQLite)
+                    return new SqliteConnection(_dbInfo.ConnectionStrings);
+                else
+                    return new SqlConnection(_dbInfo.ConnectionStrings);
+            }
+        }
 
         public void Dispose()
         {

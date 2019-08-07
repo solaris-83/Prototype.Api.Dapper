@@ -10,7 +10,7 @@ namespace Prototype.API.Domain.Repositories
     {
         Task<IEnumerable<Album>> GetAllAsync(int offset, int limit);
         Task<Album> GetByIdAsync(int id);
-        Task<List<Album>> GetByArtistIdAsync(int id);
+        Task<IEnumerable<Album>> GetByArtistIdAsync(int id);
         Task<Album> AddAsync(Album newAlbum);
         Task<bool> UpdateAsync(Album album);
         Task<bool> DeleteAsync(int id);

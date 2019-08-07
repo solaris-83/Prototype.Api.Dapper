@@ -17,6 +17,12 @@
             </summary>
             <returns>Selected album.</returns>
         </member>
+        <member name="M:Prototype.API.Dapper.Controllers.AlbumsController.GetByArtistIdAsync(System.Int32)">
+            <summary>
+            Retrieves all the albums given an Artist Id.
+            </summary>
+            <returns>Selected album.</returns>
+        </member>
         <member name="M:Prototype.API.Dapper.Controllers.AlbumsController.PostAsync(Prototype.API.Domain.ApiResources.SaveAlbumResource)">
             <summary>
             Saves a new album.

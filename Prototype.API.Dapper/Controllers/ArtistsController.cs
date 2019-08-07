@@ -21,7 +21,7 @@ namespace Prototype.API.Dapper.Controllers
     public class ArtistsController : Controller
     {
         private readonly ISupervisor _supervisor;
-        private readonly ILogger<ArtistsController> _logger;
+        private readonly ILogger _logger;
         private readonly IMapper _mapper;
 
         public ArtistsController(ISupervisor supervisor, ILogger<ArtistsController> logger, IMapper mapper)
@@ -38,22 +38,21 @@ namespace Prototype.API.Dapper.Controllers
         /// <returns>Artists list.</returns>
         [HttpGet]
         [Produces(typeof(IEnumerable<ArtistResource>))]
-        [ProducesResponseType(StatusCodes.Status200OK)]
-        [ProducesResponseType(StatusCodes.Status500InternalServerError)]
+        [ProducesResponseType(typeof(ErrorResource), StatusCodes.Status200OK)]
         public async Task<ActionResult<IEnumerable<ArtistResource>>> GetAllAsync([FromQuery] PagingApiModel paging)
         {
             if (paging.Page == 0)
             {
                 var msg = "Offset value must be positive";
                 _logger.LogError(msg);
-                return BadRequest(msg);
+                return BadRequest(new ErrorResource(msg));
             }
 
             if (paging.PageSize == 0)
             {
                 var msg = "Limit value must be positive";
                 _logger.LogError(msg);
-                return BadRequest(msg);
+                return BadRequest(new ErrorResource(msg));
             }
 
             var artists = await _supervisor.GetAllArtistAsync(paging);
@@ -67,10 +66,8 @@ namespace Prototype.API.Dapper.Controllers
         /// </summary>
         /// <returns>Selected artist.</returns>
         [HttpGet("{id}")]
-        [Produces(typeof(ArtistResource))]
-        [ProducesResponseType(StatusCodes.Status200OK)]
-        [ProducesResponseType(StatusCodes.Status404NotFound)]
-        [ProducesResponseType(StatusCodes.Status500InternalServerError)]
+        [ProducesResponseType(typeof(ArtistResource), StatusCodes.Status200OK)]
+        [ProducesResponseType(typeof(ErrorResource), StatusCodes.Status404NotFound)]
         public async Task<ActionResult<ArtistResource>> GetAsync(int id)
         {
             //try
@@ -78,7 +75,7 @@ namespace Prototype.API.Dapper.Controllers
                 var artist = await _supervisor.GetArtistByIdAsync(id);
                 if (artist == null)
                 {
-                    return NotFound();
+                    return NotFound(new ErrorResource("Artist not found"));
                 }
 
                 var resource = _mapper.Map<ArtistResource>(artist);
@@ -147,7 +144,6 @@ namespace Prototype.API.Dapper.Controllers
             if(!result.Success)
             {
                 return BadRequest(new ErrorResource(result.Message));
-                    
             }
 
             var artistResource = _mapper.Map<Artist, ArtistResource>(result.Artist);

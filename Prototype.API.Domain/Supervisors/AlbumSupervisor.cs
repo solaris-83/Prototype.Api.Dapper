@@ -31,17 +31,12 @@ namespace Prototype.API.Domain.Supervisors
             return await _albumRepository.GetByIdAsync(id);
         }
 
-        /*
-        public async Task<IEnumerable<AlbumResource>> GetAlbumByArtistIdAsync(int id,
-            CancellationToken ct = default)
+        
+        public async Task<IEnumerable<Album>> GetAlbumByArtistIdAsync(int id)
         {
-            var albums = await _albumRepository.GetByArtistIdAsync(id, ct);
-            return albums.ConvertAll();
+            var albums = await _albumRepository.GetByArtistIdAsync(id);
+            return albums;
         }
-
-        */
-
-
         
         public async Task<AlbumResponse> AddAlbumAsync(Album album)
         {
@@ -66,6 +61,7 @@ namespace Prototype.API.Domain.Supervisors
                     return new AlbumResponse("Album not found.");
 
                 existingAlbum.Title = album.Title;
+                existingAlbum.ArtistId = album.ArtistId;
 
                 await _albumRepository.UpdateAsync(existingAlbum);
                 return new AlbumResponse(existingAlbum);

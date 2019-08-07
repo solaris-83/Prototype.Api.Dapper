@@ -74,13 +74,13 @@ namespace Prototype.API.DataDapper.Repositories
             }
         }
 
-        public async Task<List<Album>> GetByArtistIdAsync(int id)
+        public async Task<IEnumerable<Album>> GetByArtistIdAsync(int id)
         {
             using (var cn = Connection)
             {
                 cn.Open();
                 var albums = await cn.QueryAsync<Album>("Select * From Albums WHERE ArtistId = @id", new { id });
-                return albums.ToList();
+                return albums;
             }
         }
 
