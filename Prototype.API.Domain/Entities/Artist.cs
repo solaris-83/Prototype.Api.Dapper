@@ -6,12 +6,12 @@ namespace Prototype.API.Domain.Entities
     public class Artist
     {
         [Key]
-        [Computed]
+        //[Computed]
         public int ArtistId { get; set; }
 
         public string Name { get; set; }
 
-        [Computed]
+        [Write(false)]
         public ICollection<Album> Albums { get; set; } = new HashSet<Album>();
 
     }

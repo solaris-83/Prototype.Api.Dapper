@@ -4,7 +4,7 @@ namespace Prototype.API.Domain.Entities
 {
     public class Album
     {
-        [Computed]
+        //[Computed]
         [Key]
         public int AlbumId { get; set; }
 
@@ -12,7 +12,7 @@ namespace Prototype.API.Domain.Entities
 
         public int ArtistId { get; set; }
 
-        [Computed]
+        [Write(false)]
         public Artist Artist { get; set; }
 
     }
