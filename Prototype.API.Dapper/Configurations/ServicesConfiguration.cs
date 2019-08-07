@@ -1,9 +1,9 @@
-﻿using FluentValidation;
+﻿
 using Microsoft.Extensions.DependencyInjection;
 using Microsoft.Extensions.Logging;
 using Newtonsoft.Json;
 using Prototype.API.DataDapper.Repositories;
-using Prototype.API.Domain.ApiModels;
+using Prototype.API.Domain.Repositories;
 using Prototype.API.Domain.Supervisors;
 
 namespace Prototype.API.Dapper.Configurations

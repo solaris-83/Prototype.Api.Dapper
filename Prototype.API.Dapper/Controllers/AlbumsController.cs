@@ -36,13 +36,13 @@ namespace Prototype.API.Dapper.Controllers
         /// <summary>
         /// Retrieves all albums.
         /// </summary>
-        /// <param name="paging">Specifiy offset and limit for data.</param>
+        /// <param name="paging">Specify offset and limit for data.</param>
         /// <returns>Albums list.</returns>
         [HttpGet]
         [ProducesResponseType(typeof(IEnumerable<AlbumResource>), StatusCodes.Status200OK)]
         [ProducesResponseType(typeof(IEnumerable<AlbumResource>), StatusCodes.Status400BadRequest)]
         [ProducesResponseType(StatusCodes.Status500InternalServerError)]
-        public async Task<ActionResult<IEnumerable<AlbumResource>>> Get([FromQuery] PagingApiModel paging, CancellationToken ct = default)
+        public async Task<ActionResult<IEnumerable<AlbumResource>>> GetAllAsync([FromQuery] PagingApiModel paging)
         {
             if (paging.Page == 0)
             {
@@ -58,33 +58,32 @@ namespace Prototype.API.Dapper.Controllers
                 return BadRequest(msg);
             }
 
-            try
-            {
-                var albums = await _supervisor.GetAllAlbumAsync(paging, ct);
-                var resource = _mapper.Map<IEnumerable<AlbumResource>>(albums);
-                return new ObjectResult(resource);
-            }
-            catch (Exception ex)
-            {
-                _logger.LogError(ex.Message);
-                return StatusCode(500, ex);
-            }
+            //try
+            //{
+            var albums = await _supervisor.GetAllAlbumAsync(paging);
+            var resource = _mapper.Map<IEnumerable<Album>, IEnumerable<AlbumResource>>(albums);
+            return new ObjectResult(resource);
+            //}
+            //catch (Exception ex)
+            //{
+            //    _logger.LogError(ex.Message);
+            //    return StatusCode(500, ex);
+            //}
         }
 
         /// <summary>
         /// Retrieves an album given an Id.
         /// </summary>
-        /// <param name="ct"></param>
         /// <returns>Selected album.</returns>
         [HttpGet("{id}")]
         [ProducesResponseType(typeof(AlbumResource), StatusCodes.Status200OK)]
         [ProducesResponseType(StatusCodes.Status404NotFound)]
         [ProducesResponseType(StatusCodes.Status500InternalServerError)]
-        public async Task<ActionResult<AlbumResource>> Get(int id, CancellationToken ct = default)
+        public async Task<ActionResult<AlbumResource>> GetAsync(int id)
         {
-            try
-            {
-                var album = await _supervisor.GetAlbumByIdAsync(id, ct);
+            //try
+            //{
+                var album = await _supervisor.GetAlbumByIdAsync(id);
                 if (album == null)
                 {
                     return NotFound(); // TODO Handle with specific class to pass in
@@ -92,12 +91,12 @@ namespace Prototype.API.Dapper.Controllers
                 
                 var resource = _mapper.Map<AlbumResource>(album);
                 return Ok(resource);
-            }
-            catch (Exception ex)
-            {
-                _logger.LogError(ex.Message);
-                return StatusCode(500, ex);
-            }
+            //}
+            //catch (Exception ex)
+            //{
+            //    _logger.LogError(ex.Message);
+            //    return StatusCode(500, ex);
+            //}
         }
 
         /*
@@ -110,7 +109,7 @@ namespace Prototype.API.Dapper.Controllers
         [ProducesResponseType(typeof(List<AlbumResource>), StatusCodes.Status200OK)]
         [ProducesResponseType(typeof(ErrorApiModel), StatusCodes.Status404NotFound)]
         [ProducesResponseType(typeof(ErrorApiModel), StatusCodes.Status500InternalServerError)]
-        public async Task<ActionResult<List<AlbumResource>>> GetByArtistId(int id, CancellationToken ct = default)
+        public async Task<ActionResult<List<AlbumResource>>> GetByArtistId(int id)
         {
             try
             {
@@ -136,29 +135,29 @@ namespace Prototype.API.Dapper.Controllers
         /// Saves a new album.
         /// </summary>
         /// <param name="input">SaveAlbumResource data.</param>
-        /// /// <param name="ct"></param>
         /// <returns>Response for the request.</returns>
         [HttpPost]
         [ProducesResponseType(typeof(AlbumResource), StatusCodes.Status201Created)]
-        [ProducesResponseType(StatusCodes.Status400BadRequest)]
-        [ProducesResponseType(StatusCodes.Status500InternalServerError)]
+        [ProducesResponseType(typeof(ErrorResource), StatusCodes.Status400BadRequest)]
+        //[ProducesResponseType(StatusCodes.Status500InternalServerError)]
 
-        public async Task<ActionResult<AlbumResource>> Post([FromBody] SaveAlbumResource input, CancellationToken ct = default)  //TODO Evaluate if try/catch is needed
+        public async Task<ActionResult<AlbumResource>> PostAsync([FromBody] SaveAlbumResource input)  //TODO Evaluate if try/catch is needed
         {
             //try
             //{
-                if (!ModelState.IsValid)
-                    return BadRequest(ModelState.GetErrorMessages());
+            if (!ModelState.IsValid)
+                return BadRequest(ModelState.GetErrorMessages());
 
-                var album = _mapper.Map<Album>(input);
-                var result = await _supervisor.AddAlbumAsync(album, ct);
-                if (!result.Success)
-                {
-                    return BadRequest(result.Message);
-                }
+            var album = _mapper.Map<SaveAlbumResource, Album>(input);
+            var result = await _supervisor.AddAlbumAsync(album);
 
-                var albumResource = _mapper.Map<Album, AlbumResource>(result.Album);
-                return StatusCode(201, albumResource);
+            if (!result.Success)
+            {
+                return BadRequest(new ErrorResource(result.Message));
+            }
+
+            var albumResource = _mapper.Map<Album, AlbumResource>(result.Album);
+            return StatusCode(201, albumResource);
             //}
             //catch (Exception ex)
             //{
@@ -173,77 +172,76 @@ namespace Prototype.API.Dapper.Controllers
         /// </summary>
         /// <param name="id">Album identifier.</param>
         /// <param name="input">Updated album data.</param>
-        /// <param name="ct"></param>
         /// <returns>Response for the request.</returns>
         [HttpPut("{id}")]
         [ProducesResponseType(typeof(AlbumResource), StatusCodes.Status200OK)]
         [ProducesResponseType(StatusCodes.Status404NotFound)]
         [ProducesResponseType(StatusCodes.Status500InternalServerError)]
-        public async Task<ActionResult<AlbumResource>> Put(int id, [FromBody] AlbumResource input,
-            CancellationToken ct = default)
+        public async Task<ActionResult<AlbumResource>> PutAsync(int id, [FromBody] SaveAlbumResource input)
         {
-            try
-            {
+            //try
+            //{
                 if (!ModelState.IsValid)
                     return BadRequest(ModelState.GetErrorMessages());
 
+                //var album = await _supervisor.GetAlbumByIdAsync(id);
+                //if (album == null)
+                //{
+                //    return NotFound();
+                //}
 
-                var album = await _supervisor.GetAlbumByIdAsync(id, ct);
-                if (album == null)
+                var album = _mapper.Map<SaveAlbumResource, Album>(input);
+
+                var result = await _supervisor.UpdateAlbumAsync(id, album);
+                if(!result.Success)
                 {
-                    return NotFound();
+                    return BadRequest(new ErrorResource(result.Message));
                 }
 
-                var updAlbum = _mapper.Map<Album>(input);
-
-                if (await _supervisor.UpdateAlbumAsync(updAlbum, ct))
-                {
-                    return Ok(input);
-                }
-
-                return StatusCode(500);
-            }
-            catch (Exception ex)
-            {
-                _logger.LogError(ex.Message);
-                return StatusCode(500, ex);
-            }
+                var albumResource = _mapper.Map<Album, AlbumResource>(result.Album);
+                return Ok(albumResource);
+            //}
+            //catch (Exception ex)
+            //{
+            //    _logger.LogError(ex.Message);
+            //    return StatusCode(500, ex);
+            //}
         }
 
-        /*
+        
         /// <summary>
         /// Deletes a given album according to an Id.
         /// </summary>
         /// <param name="id">Album identifier.</param>
-        /// <param name="ct"></param>
         /// <returns>Response for the request.</returns>
         [HttpDelete("{id}")]
-        [ProducesResponseType(typeof(void), StatusCodes.Status200OK)]
-        [ProducesResponseType(typeof(ErrorApiModel), StatusCodes.Status404NotFound)]
-        [ProducesResponseType(typeof(ErrorApiModel), StatusCodes.Status500InternalServerError)]
-        public async Task<ActionResult> DeleteAsync(int id, CancellationToken ct = default)
+        [ProducesResponseType(typeof(AlbumResource), StatusCodes.Status200OK)]
+        [ProducesResponseType(StatusCodes.Status404NotFound)]
+        [ProducesResponseType(StatusCodes.Status500InternalServerError)]
+        public async Task<ActionResult> DeleteAsync(int id)
         {
-            try
-            {
-                if (await _supervisor.GetAlbumByIdAsync(id, ct) == null)
-                {
-                    return NotFound();
-                }
+            //try
+            //{
+            //if (await _supervisor.GetAlbumByIdAsync(id) == null)
+            //{
+            //    return NotFound();
+            //}
 
-                if (await _supervisor.DeleteAlbumAsync(id, ct))
-                {
-                    return Ok();
-                }
-
-                return StatusCode(500);
-            }
-            catch (Exception ex)
+            var result = await _supervisor.DeleteAlbumAsync(id);
+            if(!result.Success)
             {
-                _logger.LogError(ex.Message);
-                return StatusCode(500, ex);
+                return BadRequest(new ErrorResource(result.Message));
             }
+
+            var albumResource = _mapper.Map<Album, AlbumResource>(result.Album);
+            return Ok(albumResource);
+
+            //}
+            //catch (Exception ex)
+            //{
+            //    _logger.LogError(ex.Message);
+            //    return StatusCode(500, ex);
+            //}
         }
-
-    */
     }
 }

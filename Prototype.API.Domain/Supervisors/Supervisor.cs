@@ -1,4 +1,6 @@
 ﻿
+using Prototype.API.Domain.Repositories;
+
 namespace Prototype.API.Domain.Supervisors
 {
     public partial class Supervisor : ISupervisor

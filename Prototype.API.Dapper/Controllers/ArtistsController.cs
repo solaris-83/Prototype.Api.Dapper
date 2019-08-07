@@ -1,9 +1,7 @@
 ﻿using AutoMapper;
-using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Http;
 using Microsoft.AspNetCore.Mvc;
 using Microsoft.Extensions.Logging;
-using Newtonsoft.Json;
 using Prototype.API.Dapper.Extensions;
 using Prototype.API.Domain.ApiModels;
 using Prototype.API.Domain.ApiResources;
@@ -12,8 +10,6 @@ using Prototype.API.Domain.Resources;
 using Prototype.API.Domain.Supervisors;
 using System;
 using System.Collections.Generic;
-using System.Data.SqlClient;
-using System.Linq;
 using System.Threading;
 using System.Threading.Tasks;
 
@@ -44,7 +40,7 @@ namespace Prototype.API.Dapper.Controllers
         [Produces(typeof(IEnumerable<ArtistResource>))]
         [ProducesResponseType(StatusCodes.Status200OK)]
         [ProducesResponseType(StatusCodes.Status500InternalServerError)]
-        public async Task<ActionResult<IEnumerable<ArtistResource>>> Get([FromQuery] PagingApiModel paging, CancellationToken ct = default)
+        public async Task<ActionResult<IEnumerable<ArtistResource>>> GetAllAsync([FromQuery] PagingApiModel paging)
         {
             if (paging.Page == 0)
             {
@@ -60,7 +56,7 @@ namespace Prototype.API.Dapper.Controllers
                 return BadRequest(msg);
             }
 
-            var artists = await _supervisor.GetAllArtistAsync(paging, ct);
+            var artists = await _supervisor.GetAllArtistAsync(paging);
             var resource = _mapper.Map<IEnumerable<ArtistResource>>(artists);
             return new ObjectResult(resource);
            
@@ -69,18 +65,17 @@ namespace Prototype.API.Dapper.Controllers
         /// <summary>
         /// Retrieves an artist given an Id.
         /// </summary>
-        /// <param name="ct"></param>
         /// <returns>Selected artist.</returns>
         [HttpGet("{id}")]
         [Produces(typeof(ArtistResource))]
         [ProducesResponseType(StatusCodes.Status200OK)]
         [ProducesResponseType(StatusCodes.Status404NotFound)]
         [ProducesResponseType(StatusCodes.Status500InternalServerError)]
-        public async Task<ActionResult<ArtistResource>> Get(int id, CancellationToken ct = default)
+        public async Task<ActionResult<ArtistResource>> GetAsync(int id)
         {
-            try
-            {
-                var artist = await _supervisor.GetArtistByIdAsync(id, ct);
+            //try
+            //{
+                var artist = await _supervisor.GetArtistByIdAsync(id);
                 if (artist == null)
                 {
                     return NotFound();
@@ -88,11 +83,11 @@ namespace Prototype.API.Dapper.Controllers
 
                 var resource = _mapper.Map<ArtistResource>(artist);
                 return Ok(resource);
-            }
-            catch (Exception ex)
-            {
-                return StatusCode(500, ex);
-            }
+            //}
+            //catch (Exception ex)
+            //{
+            //    return StatusCode(500, ex);
+            //}
         }
 
 
@@ -100,23 +95,21 @@ namespace Prototype.API.Dapper.Controllers
         /// Saves a new artist.
         /// </summary>
         /// <param name="input">SaveArtistResource data.</param>
-        /// /// <param name="ct"></param>
         /// <returns>Response for the request.</returns>
         [HttpPost]
         [ProducesResponseType(typeof(ArtistResource), StatusCodes.Status201Created)]
-        [ProducesResponseType(StatusCodes.Status400BadRequest)]
+        [ProducesResponseType(typeof(ErrorResource), StatusCodes.Status400BadRequest)]
         [ProducesResponseType(StatusCodes.Status500InternalServerError)]
-        public async Task<ActionResult<ArtistResource>> Post([FromBody] SaveArtistResource input,
-            CancellationToken ct = default)
+        public async Task<ActionResult<ArtistResource>> PostAsync([FromBody] SaveArtistResource input)
         {
             if (!ModelState.IsValid)
                 return BadRequest(ModelState.GetErrorMessages());
 
-            var artist = _mapper.Map<Artist>(input);
-            var result = await _supervisor.AddArtistAsync(artist, ct);
+            var artist = _mapper.Map<SaveArtistResource, Artist>(input);
+            var result = await _supervisor.AddArtistAsync(artist);
             if (!result.Success)
             {
-                return BadRequest(result.Message);
+                return BadRequest(new ErrorResource(result.Message));
             }
 
             var artistResource = _mapper.Map<Artist, ArtistResource>(result.Artist);
@@ -129,70 +122,77 @@ namespace Prototype.API.Dapper.Controllers
         /// </summary>
         /// <param name="id">Artist identifier.</param>
         /// <param name="input">SaveArtistResource data.</param>
-        /// <param name="ct"></param>
         /// <returns>Response for the request.</returns>
         [HttpPut("{id}")]
         [ProducesResponseType(typeof(ArtistResource), StatusCodes.Status200OK)]
-        [ProducesResponseType(StatusCodes.Status404NotFound)]
+        [ProducesResponseType(typeof(ErrorResource), StatusCodes.Status400BadRequest)]
+        [ProducesResponseType(typeof(ErrorResource), StatusCodes.Status404NotFound)]
         [ProducesResponseType(StatusCodes.Status500InternalServerError)]
-        public async Task<ActionResult<ArtistResource>> Put(int id, [FromBody] SaveArtistResource input, CancellationToken ct = default)
+        public async Task<ActionResult<ArtistResource>> PutAsync(int id, [FromBody] SaveArtistResource input)
         {
-            try
+            //try
+            //{
+            if (!ModelState.IsValid)
+                return BadRequest(ModelState.GetErrorMessages());
+
+            var artist = await _supervisor.GetArtistByIdAsync(id);
+            if (artist == null)
             {
-                if (!ModelState.IsValid)
-                    return BadRequest(ModelState.GetErrorMessages());
-
-                var artist = await _supervisor.GetArtistByIdAsync(id, ct);
-                if (artist == null)
-                {
-                    return NotFound();
-                }
-
-                var updArtist = _mapper.Map<Artist>(input);
-                updArtist.ArtistId = id;
-
-                if (await _supervisor.UpdateArtistAsync(updArtist, ct))
-                {
-                    var artistResource = _mapper.Map<Artist, ArtistResource>(updArtist);
-                    return Ok(artistResource);
-                }
-
-                return StatusCode(500);
+                return NotFound(new ErrorResource("Artist not found"));
             }
-            catch (Exception ex)
+
+            artist = _mapper.Map<SaveArtistResource, Artist>(input);
+
+            var result = await _supervisor.UpdateArtistAsync(id, artist);
+            if(!result.Success)
             {
-                return StatusCode(500, ex);
+                return BadRequest(new ErrorResource(result.Message));
+                    
             }
+
+            var artistResource = _mapper.Map<Artist, ArtistResource>(result.Artist);
+            return Ok(artistResource);
+            //}
+            //catch (Exception ex)
+            //{
+            //    return StatusCode(500, ex);
+            //}
         }
 
-        /*
-        [HttpDelete("{id}")]  //TODO Improve status codes. Avoid using 500 for reference key violation errors?
-        [Produces(typeof(void))]
-        [ProducesResponseType(StatusCodes.Status200OK)]
-        [ProducesResponseType(typeof(ErrorApiModel), StatusCodes.Status404NotFound)]
-        [ProducesResponseType(typeof(ErrorApiModel), StatusCodes.Status500InternalServerError)]
-        public async Task<ActionResult> Delete(int id, CancellationToken ct = default)
+        /// <summary>
+        /// Deletes a given artist according to an Id.
+        /// </summary>
+        /// <param name="id">Artist identifier.</param>
+        /// <returns>Response for the request.</returns>
+        [HttpDelete("{id}")]
+        [ProducesResponseType(typeof(ArtistResource), StatusCodes.Status200OK)]
+        [ProducesResponseType(typeof(ErrorResource), StatusCodes.Status400BadRequest)]
+        [ProducesResponseType(typeof(ErrorResource), StatusCodes.Status404NotFound)]
+        [ProducesResponseType(StatusCodes.Status500InternalServerError)]
+        public async Task<ActionResult> DeleteAsync(int id)
         {
-            try
+            //try
+            //{
+            var artist = await _supervisor.GetArtistByIdAsync(id);
+            if (artist == null)
             {
-                if (await _supervisor.GetArtistByIdAsync(id, ct) == null)
-                {
-                    return NotFound();
-                }
-
-                if (await _supervisor.DeleteArtistAsync(id, ct))
-                {
-                    return Ok();
-                }
-
-                return StatusCode(500);
+                return NotFound(new ErrorResource("Artist not found"));
             }
-            catch (Exception ex)
+
+            var result = await _supervisor.DeleteArtistAsync(id);
+            if(!result.Success)
             {
-                return StatusCode(500, ex);
+                return BadRequest(new ErrorResource(result.Message));
             }
+
+            var artistResource = _mapper.Map<Artist, ArtistResource>(result.Artist);
+            return Ok(artistResource);
+
+            //}
+            //catch (Exception ex)
+            //{
+            //return StatusCode(500, ex);
+            //}
         }
-
-    */
     }
 }

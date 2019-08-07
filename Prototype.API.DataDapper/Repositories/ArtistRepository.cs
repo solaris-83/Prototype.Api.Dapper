@@ -5,7 +5,7 @@ using Microsoft.Extensions.Logging;
 using Prototype.API.DataDapper.StaticQueries;
 using Prototype.API.Domain.DbInfoConnection;
 using Prototype.API.Domain.Entities;
-using Prototype.API.Domain.Supervisors;
+using Prototype.API.Domain.Repositories;
 using System;
 using System.Collections.Generic;
 using System.Data;
@@ -34,10 +34,10 @@ namespace Prototype.API.DataDapper.Repositories
             Connection.Dispose();
         }
 
-        private async Task<bool> ArtistExists(int id, CancellationToken ct = default) =>
+        private async Task<bool> ArtistExists(int id) =>
             await Connection.ExecuteScalarAsync<bool>("select count(1) from Artists where ArtistId = @id", new { id });
 
-        public async Task<IEnumerable<Artist>> GetAllAsync(int offset, int limit, CancellationToken ct = default)
+        public async Task<IEnumerable<Artist>> GetAllAsync(int offset, int limit)
         {
             using (IDbConnection cn = Connection)
             {
@@ -48,7 +48,7 @@ namespace Prototype.API.DataDapper.Repositories
             }
         }
 
-        public async Task<Artist> GetByIdAsync(int id, CancellationToken ct = default)
+        public async Task<Artist> GetByIdAsync(int id)
         {
             using (var cn = Connection)
             {
@@ -57,7 +57,7 @@ namespace Prototype.API.DataDapper.Repositories
             }
         }
 
-        public async Task<Artist> AddAsync(Artist newArtist, CancellationToken ct = default)
+        public async Task<Artist> AddAsync(Artist newArtist)
         {
             using (var cn = Connection)
             {
@@ -69,41 +69,41 @@ namespace Prototype.API.DataDapper.Repositories
             return newArtist;
         }
 
-        public async Task<bool> UpdateAsync(Artist artist, CancellationToken ct = default)
+        public async Task<bool> UpdateAsync(Artist artist)
         {
-            if (!await ArtistExists(artist.ArtistId, ct))
+            if (!await ArtistExists(artist.ArtistId))
                 return false;
 
-            try
-            {
+            //try
+            //{
                 using (var cn = Connection)
                 {
                     cn.Open();
                     return await cn.UpdateAsync(artist);
                 }
-            }
-            catch (Exception ex)
-            {
-                _logger.LogError(ex.Message);
-                return false;
-            }
+            //}
+            //catch (Exception ex)
+            //{
+            //    _logger.LogError(ex.Message);
+            //    return false;
+            //}
         }
 
-        public async Task<bool> DeleteAsync(int id, CancellationToken ct = default)
+        public async Task<bool> DeleteAsync(int id)
         {
-            try
-            {
+            //try
+            //{
                 using (var cn = Connection)
                 {
                     cn.Open();
                     return await cn.DeleteAsync(new Artist { ArtistId = id });
                 }
-            }
-            catch (Exception ex)
-            {
-                _logger.LogError(ex.Message);
-                return false;
-            }
+            //}
+            //catch (Exception ex)
+            //{
+            //    _logger.LogError(ex.Message);
+            //    return false;
+            //}
         }
     }
 }

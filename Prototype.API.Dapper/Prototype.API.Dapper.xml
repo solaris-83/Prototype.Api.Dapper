@@ -4,66 +4,74 @@
         <name>Prototype.API.Dapper</name>
     </assembly>
     <members>
-        <member name="M:Prototype.API.Dapper.Controllers.AlbumsController.Get(Prototype.API.Domain.ApiModels.PagingApiModel,System.Threading.CancellationToken)">
+        <member name="M:Prototype.API.Dapper.Controllers.AlbumsController.GetAllAsync(Prototype.API.Domain.ApiModels.PagingApiModel)">
             <summary>
             Retrieves all albums.
             </summary>
-            <param name="paging">Specifiy offset and limit for data.</param>
+            <param name="paging">Specify offset and limit for data.</param>
             <returns>Albums list.</returns>
         </member>
-        <member name="M:Prototype.API.Dapper.Controllers.AlbumsController.Get(System.Int32,System.Threading.CancellationToken)">
+        <member name="M:Prototype.API.Dapper.Controllers.AlbumsController.GetAsync(System.Int32)">
             <summary>
             Retrieves an album given an Id.
             </summary>
-            <param name="ct"></param>
             <returns>Selected album.</returns>
         </member>
-        <member name="M:Prototype.API.Dapper.Controllers.AlbumsController.Post(Prototype.API.Domain.ApiResources.SaveAlbumResource,System.Threading.CancellationToken)">
+        <member name="M:Prototype.API.Dapper.Controllers.AlbumsController.PostAsync(Prototype.API.Domain.ApiResources.SaveAlbumResource)">
             <summary>
             Saves a new album.
             </summary>
             <param name="input">SaveAlbumResource data.</param>
-            /// <param name="ct"></param>
             <returns>Response for the request.</returns>
         </member>
-        <member name="M:Prototype.API.Dapper.Controllers.AlbumsController.Put(System.Int32,Prototype.API.Domain.ApiModels.AlbumResource,System.Threading.CancellationToken)">
+        <member name="M:Prototype.API.Dapper.Controllers.AlbumsController.PutAsync(System.Int32,Prototype.API.Domain.ApiResources.SaveAlbumResource)">
             <summary>
             Updates an existing album according to an Id.
             </summary>
             <param name="id">Album identifier.</param>
             <param name="input">Updated album data.</param>
-            <param name="ct"></param>
             <returns>Response for the request.</returns>
         </member>
-        <member name="M:Prototype.API.Dapper.Controllers.ArtistsController.Get(Prototype.API.Domain.ApiModels.PagingApiModel,System.Threading.CancellationToken)">
+        <member name="M:Prototype.API.Dapper.Controllers.AlbumsController.DeleteAsync(System.Int32)">
+            <summary>
+            Deletes a given album according to an Id.
+            </summary>
+            <param name="id">Album identifier.</param>
+            <returns>Response for the request.</returns>
+        </member>
+        <member name="M:Prototype.API.Dapper.Controllers.ArtistsController.GetAllAsync(Prototype.API.Domain.ApiModels.PagingApiModel)">
             <summary>
             Retrieves all artists.
             </summary>
             <param name="paging">Specifiy offset and limit for data.</param>
             <returns>Artists list.</returns>
         </member>
-        <member name="M:Prototype.API.Dapper.Controllers.ArtistsController.Get(System.Int32,System.Threading.CancellationToken)">
+        <member name="M:Prototype.API.Dapper.Controllers.ArtistsController.GetAsync(System.Int32)">
             <summary>
             Retrieves an artist given an Id.
             </summary>
-            <param name="ct"></param>
             <returns>Selected artist.</returns>
         </member>
-        <member name="M:Prototype.API.Dapper.Controllers.ArtistsController.Post(Prototype.API.Domain.Resources.SaveArtistResource,System.Threading.CancellationToken)">
+        <member name="M:Prototype.API.Dapper.Controllers.ArtistsController.PostAsync(Prototype.API.Domain.Resources.SaveArtistResource)">
             <summary>
             Saves a new artist.
             </summary>
             <param name="input">SaveArtistResource data.</param>
-            /// <param name="ct"></param>
             <returns>Response for the request.</returns>
         </member>
-        <member name="M:Prototype.API.Dapper.Controllers.ArtistsController.Put(System.Int32,Prototype.API.Domain.Resources.SaveArtistResource,System.Threading.CancellationToken)">
+        <member name="M:Prototype.API.Dapper.Controllers.ArtistsController.PutAsync(System.Int32,Prototype.API.Domain.Resources.SaveArtistResource)">
             <summary>
             Update an artist.
             </summary>
             <param name="id">Artist identifier.</param>
             <param name="input">SaveArtistResource data.</param>
-            <param name="ct"></param>
+            <returns>Response for the request.</returns>
+        </member>
+        <member name="M:Prototype.API.Dapper.Controllers.ArtistsController.DeleteAsync(System.Int32)">
+            <summary>
+            Deletes a given artist according to an Id.
+            </summary>
+            <param name="id">Artist identifier.</param>
             <returns>Response for the request.</returns>
         </member>
     </members>

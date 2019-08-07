@@ -11,53 +11,72 @@ namespace Prototype.API.Domain.Supervisors
 {
     public partial class Supervisor
     {
-        public async Task<IEnumerable<Artist>> GetAllArtistAsync(PagingApiModel paging, CancellationToken ct = default)
+        public async Task<IEnumerable<Artist>> GetAllArtistAsync(PagingApiModel paging)
         {
-            var artists = await _artistRepository.GetAllAsync(paging.Page, paging.PageSize, ct);
+            var artists = await _artistRepository.GetAllAsync(paging.Page, paging.PageSize);
             return artists;
         }
 
-        public async Task<Artist> GetArtistByIdAsync(int id, CancellationToken ct = default)
+        public async Task<Artist> GetArtistByIdAsync(int id)
         {
-            var artist = await _artistRepository.GetByIdAsync(id, ct);
+            var artist = await _artistRepository.GetByIdAsync(id);
             return artist;
         }
 
         
-        public async Task<SaveArtistResponse> AddArtistAsync(Artist artist, CancellationToken ct = default)
+        public async Task<ArtistResponse> AddArtistAsync(Artist artist)
         {
             try
             {
-                artist = await _artistRepository.AddAsync(artist, ct);
-                return new SaveArtistResponse(artist);
+                await _artistRepository.AddAsync(artist);
+                return new ArtistResponse(artist);
             }
             catch (Exception ex)
             {
-                return new SaveArtistResponse($"An error occurred when saving the artist: {ex.Message}");
+                return new ArtistResponse($"An error occurred when saving the artist: {ex.Message}");
             }
         }
 
         
-        public async Task<bool> UpdateArtistAsync(Artist artist, CancellationToken ct = default)
+        public async Task<ArtistResponse> UpdateArtistAsync(int id, Artist artist)
         {
             try
             {
-                var output = await _artistRepository.GetByIdAsync(artist.ArtistId, ct);
+                var existingArtist = await _artistRepository.GetByIdAsync(id);
 
-                if (output == null)
-                    return false;
+                if (existingArtist == null)
+                    return new ArtistResponse("Artist not found.");
 
-                return await _artistRepository.UpdateAsync(artist, ct);
+                existingArtist.Name = artist.Name;
+
+                await _artistRepository.UpdateAsync(existingArtist);
+                return new ArtistResponse(existingArtist);
             }
-            catch (Exception)
+            catch (Exception ex)
             {
-                return false;
+                return new ArtistResponse($"An error occurred when updating the artist: {ex.Message}");
             }
         }
 
-        /*
-        public Task<bool> DeleteArtistAsync(int id, CancellationToken ct = default)
-            => _artistRepository.DeleteAsync(id, ct);
-            */
+        public async Task<ArtistResponse> DeleteArtistAsync(int id)
+        {
+            try
+            {
+                var existingArtist = await _artistRepository.GetByIdAsync(id);
+                if (existingArtist == null)
+                {
+                    return new ArtistResponse("Artist not found.");
+                }
+
+                await _artistRepository.DeleteAsync(id);
+
+                return new ArtistResponse(existingArtist);
+            }
+            catch (Exception ex)
+            {
+                // Do some logging stuff
+                return new ArtistResponse($"An error occurred when deleting the artist: {ex.Message}");
+            }
+        }  
     }
 }

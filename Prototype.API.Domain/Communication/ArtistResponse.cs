@@ -5,11 +5,11 @@ using System.Text;
 
 namespace Prototype.API.Domain.Communication
 {
-    public class SaveArtistResponse : BaseResponse
+    public class ArtistResponse : BaseResponse
     {
         public Artist Artist { get; private set; }
 
-        private SaveArtistResponse(bool success, string message, Artist artist) : base(success, message)
+        private ArtistResponse(bool success, string message, Artist artist) : base(success, message)
         {
             Artist = artist;
         }
@@ -19,7 +19,7 @@ namespace Prototype.API.Domain.Communication
         /// </summary>
         /// <param name="artist">Saved artist.</param>
         /// <returns>Response.</returns>
-        public SaveArtistResponse(Artist artist) : this(true, string.Empty, artist)
+        public ArtistResponse(Artist artist) : this(true, string.Empty, artist)
         { }
 
         /// <summary>
@@ -27,7 +27,7 @@ namespace Prototype.API.Domain.Communication
         /// </summary>
         /// <param name="message">Error message.</param>
         /// <returns>Response.</returns>
-        public SaveArtistResponse(string message) : this(false, message, null)
+        public ArtistResponse(string message) : this(false, message, null)
         { }
     }
 }

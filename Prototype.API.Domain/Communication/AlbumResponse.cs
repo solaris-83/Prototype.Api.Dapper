@@ -2,11 +2,11 @@
 
 namespace Prototype.API.Domain.Communication
 {
-    public class SaveAlbumResponse : BaseResponse
+    public class AlbumResponse : BaseResponse
     {
         public Album Album { get; private set; }
 
-        private SaveAlbumResponse(bool success, string message, Album album) : base(success, message)
+        private AlbumResponse(bool success, string message, Album album) : base(success, message)
         {
             Album = album;
         }
@@ -16,7 +16,7 @@ namespace Prototype.API.Domain.Communication
         /// </summary>
         /// <param name="album">Saved album.</param>
         /// <returns>Response.</returns>
-        public SaveAlbumResponse(Album album) : this(true, string.Empty, album)
+        public AlbumResponse(Album album) : this(true, string.Empty, album)
         { }
 
         /// <summary>
@@ -24,7 +24,7 @@ namespace Prototype.API.Domain.Communication
         /// </summary>
         /// <param name="message">Error message.</param>
         /// <returns>Response.</returns>
-        public SaveAlbumResponse(string message) : this(false, message, null)
+        public AlbumResponse(string message) : this(false, message, null)
         { }
     }
 }

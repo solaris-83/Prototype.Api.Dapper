@@ -1,20 +1,16 @@
 ﻿using Dapper;
 using Dapper.Contrib.Extensions;
 using Microsoft.Data.Sqlite;
-using Microsoft.Extensions.Configuration;
 using Microsoft.Extensions.Logging;
 using Prototype.API.DataDapper.StaticQueries;
-using Prototype.API.Domain;
-using Prototype.API.Domain.ApiModels;
 using Prototype.API.Domain.DbInfoConnection;
 using Prototype.API.Domain.Entities;
-using Prototype.API.Domain.Supervisors;
+using Prototype.API.Domain.Repositories;
 using System;
 using System.Collections.Generic;
 using System.Data;
 using System.Data.SqlClient;
 using System.Linq;
-using System.Threading;
 using System.Threading.Tasks;
 
 namespace Prototype.API.DataDapper.Repositories
@@ -46,10 +42,10 @@ namespace Prototype.API.DataDapper.Repositories
             Connection.Dispose();
         }
 
-        private async Task<bool> AlbumExists(int id, CancellationToken ct = default) =>
+        private async Task<bool> AlbumExists(int id) =>
             await Connection.ExecuteScalarAsync<bool>("select count(1) from Albums where AlbumId = @id", new { id });
 
-        public async Task<IEnumerable<Album>> GetAllAsync(int offset, int limit, CancellationToken ct = default)
+        public async Task<IEnumerable<Album>> GetAllAsync(int offset, int limit)
         {
             try
             {
@@ -68,7 +64,7 @@ namespace Prototype.API.DataDapper.Repositories
             }
         }
 
-        public async Task<Album> GetByIdAsync(int id, CancellationToken ct = default)
+        public async Task<Album> GetByIdAsync(int id)
         {
             using (var cn = Connection)
             {
@@ -78,7 +74,7 @@ namespace Prototype.API.DataDapper.Repositories
             }
         }
 
-        public async Task<List<Album>> GetByArtistIdAsync(int id, CancellationToken ct = default)
+        public async Task<List<Album>> GetByArtistIdAsync(int id)
         {
             using (var cn = Connection)
             {
@@ -88,7 +84,7 @@ namespace Prototype.API.DataDapper.Repositories
             }
         }
 
-        public async Task<Album> AddAsync(Album newAlbum, CancellationToken ct = default)
+        public async Task<Album> AddAsync(Album newAlbum)
         {
             using (var cn = Connection)
             {
@@ -101,9 +97,9 @@ namespace Prototype.API.DataDapper.Repositories
             return newAlbum;
         }
 
-        public async Task<bool> UpdateAsync(Album album, CancellationToken ct = default)
+        public async Task<bool> UpdateAsync(Album album)
         {
-            if (!await AlbumExists(album.AlbumId, ct))
+            if (!await AlbumExists(album.AlbumId))
                 return false;
 
             try
@@ -121,7 +117,7 @@ namespace Prototype.API.DataDapper.Repositories
             }
         }
 
-        public async Task<bool> DeleteAsync(int id, CancellationToken ct = default)
+        public async Task<bool> DeleteAsync(int id)
         {
             try
             {

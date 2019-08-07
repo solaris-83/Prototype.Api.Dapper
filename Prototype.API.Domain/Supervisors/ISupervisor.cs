@@ -11,24 +11,22 @@ namespace Prototype.API.Domain.Supervisors
     public interface ISupervisor
     {
         //=== Albums 
-        Task<IEnumerable<Album>> GetAllAlbumAsync(PagingApiModel paging, CancellationToken ct = default);
-        Task<Album> GetAlbumByIdAsync(int id, CancellationToken ct = default);
+        Task<IEnumerable<Album>> GetAllAlbumAsync(PagingApiModel paging);
+        Task<Album> GetAlbumByIdAsync(int id);
 
-        //Task<IEnumerable<Album>> GetAlbumByArtistIdAsync(int id, CancellationToken ct = default);
+        //Task<IEnumerable<Album>> GetAlbumByArtistIdAsync(int id);
 
-        Task<SaveAlbumResponse> AddAlbumAsync(Album newAlbum, CancellationToken ct = default);
-        Task<bool> UpdateAlbumAsync(Album album, CancellationToken ct = default);
-
-        //Task<bool> DeleteAlbumAsync(int id, CancellationToken ct = default);
+        Task<AlbumResponse> AddAlbumAsync(Album newAlbum);
+        Task<AlbumResponse> UpdateAlbumAsync(int id, Album album);
+        Task<AlbumResponse> DeleteAlbumAsync(int id);
 
 
         //=== Artists 
-        Task<IEnumerable<Artist>> GetAllArtistAsync(PagingApiModel paging, CancellationToken ct = default);
-        Task<Artist> GetArtistByIdAsync(int id, CancellationToken ct = default);
-        Task<SaveArtistResponse> AddArtistAsync(Artist newArtist, CancellationToken ct = default);
-        Task<bool> UpdateArtistAsync(Artist artist, CancellationToken ct = default);
-
-        //Task<bool> DeleteArtistAsync(int id, CancellationToken ct = default);
+        Task<IEnumerable<Artist>> GetAllArtistAsync(PagingApiModel paging);
+        Task<Artist> GetArtistByIdAsync(int id);
+        Task<ArtistResponse> AddArtistAsync(Artist newArtist);
+        Task<ArtistResponse> UpdateArtistAsync(int id, Artist artist);
+        Task<ArtistResponse> DeleteArtistAsync(int id);
 
     }
 }

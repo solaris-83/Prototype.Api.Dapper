@@ -4,14 +4,14 @@ using System.Collections.Generic;
 using System.Threading;
 using System.Threading.Tasks;
 
-namespace Prototype.API.Domain.Supervisors
+namespace Prototype.API.Domain.Repositories
 {
     public interface IArtistRepository : IDisposable
     {
-        Task<IEnumerable<Artist>> GetAllAsync(int offset, int limit, CancellationToken ct = default);
-        Task<Artist> GetByIdAsync(int id, CancellationToken ct = default);
-        Task<Artist> AddAsync(Artist newArtist, CancellationToken ct = default);
-        Task<bool> UpdateAsync(Artist artist, CancellationToken ct = default);
-        Task<bool> DeleteAsync(int id, CancellationToken ct = default);
+        Task<IEnumerable<Artist>> GetAllAsync(int offset, int limit);
+        Task<Artist> GetByIdAsync(int id);
+        Task<Artist> AddAsync(Artist newArtist);
+        Task<bool> UpdateAsync(Artist artist);
+        Task<bool> DeleteAsync(int id);
     }
 }

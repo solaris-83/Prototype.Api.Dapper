@@ -11,11 +11,11 @@ namespace Prototype.API.Domain.Supervisors
 {
     public partial class Supervisor
     {
-        public async Task<IEnumerable<Album>> GetAllAlbumAsync(PagingApiModel paging, CancellationToken ct = default)
+        public async Task<IEnumerable<Album>> GetAllAlbumAsync(PagingApiModel paging)
         {
             try
             {
-                var albums = await _albumRepository.GetAllAsync(paging.Page, paging.PageSize, ct);
+                var albums = await _albumRepository.GetAllAsync(paging.Page, paging.PageSize);
 
                 return albums;
             }
@@ -26,9 +26,9 @@ namespace Prototype.API.Domain.Supervisors
             
         }
 
-        public async Task<Album> GetAlbumByIdAsync(int id, CancellationToken ct = default)
+        public async Task<Album> GetAlbumByIdAsync(int id)
         {
-            return await _albumRepository.GetByIdAsync(id, ct);
+            return await _albumRepository.GetByIdAsync(id);
         }
 
         /*
@@ -43,40 +43,59 @@ namespace Prototype.API.Domain.Supervisors
 
 
         
-        public async Task<SaveAlbumResponse> AddAlbumAsync(Album album, CancellationToken ct = default)
+        public async Task<AlbumResponse> AddAlbumAsync(Album album)
         {
             try
             {
-                album = await _albumRepository.AddAsync(album, ct);
-                return new SaveAlbumResponse(album);
+                album = await _albumRepository.AddAsync(album);
+                return new AlbumResponse(album);
             }
             catch(Exception ex)
             {
-                return new SaveAlbumResponse($"An error occurred when saving the album: {ex.Message}");
+                return new AlbumResponse($"An error occurred when saving the album: {ex.Message}");
             }
         }
 
         
-        public async Task<bool> UpdateAlbumAsync(Album album, CancellationToken ct = default)
+        public async Task<AlbumResponse> UpdateAlbumAsync(int id, Album album)
         {
             try
             {
-                var output = await _albumRepository.GetByIdAsync(album.AlbumId, ct);
+                var existingAlbum = await _albumRepository.GetByIdAsync(id);
+                if (existingAlbum == null)
+                    return new AlbumResponse("Album not found.");
 
-                if (output == null)
-                    return false;
+                existingAlbum.Title = album.Title;
 
-                return await _albumRepository.UpdateAsync(album, ct);
+                await _albumRepository.UpdateAsync(existingAlbum);
+                return new AlbumResponse(existingAlbum);
             }
-            catch(Exception)
+            catch(Exception ex)
             {
-                return false;
+                return new AlbumResponse($"An error occurred when updating the album: {ex.Message}");
             }
         }
-        /*
-        public Task<bool> DeleteAlbumAsync(int id, CancellationToken ct = default)
-            => _albumRepository.DeleteAsync(id, ct);
 
-    */
+        public async Task<AlbumResponse> DeleteAlbumAsync(int id)
+        {
+            try
+            {
+                var existingAlbum = await _albumRepository.GetByIdAsync(id);
+                if (existingAlbum == null)
+                {
+                    return new AlbumResponse("Album not found.");
+                }
+
+                await _albumRepository.DeleteAsync(id);
+
+                return new AlbumResponse(existingAlbum);
+            }
+            catch (Exception ex)
+            {
+                // Do some logging stuff
+                return new AlbumResponse($"An error occurred when deleting the product: {ex.Message}");
+            }
+        }
+
     }
 }
