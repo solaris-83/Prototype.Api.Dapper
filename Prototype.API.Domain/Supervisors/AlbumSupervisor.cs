@@ -1,5 +1,7 @@
 ﻿using Prototype.API.Domain.ApiModels;
-using Prototype.API.Domain.Extensions;
+using Prototype.API.Domain.ApiResources;
+using Prototype.API.Domain.Communication;
+using Prototype.API.Domain.Entities;
 using System;
 using System.Collections.Generic;
 using System.Threading;
@@ -9,13 +11,13 @@ namespace Prototype.API.Domain.Supervisors
 {
     public partial class Supervisor
     {
-        public async Task<IEnumerable<AlbumApiModel>> GetAllAlbumAsync(PagingApiModel paging, CancellationToken ct = default)
+        public async Task<IEnumerable<Album>> GetAllAlbumAsync(PagingApiModel paging, CancellationToken ct = default)
         {
             try
             {
-                var albums = await _albumRepository.GetAllAsync(paging.Offset, paging.Limit, ct);
+                var albums = await _albumRepository.GetAllAsync(paging.Page, paging.PageSize, ct);
 
-                return albums.ConvertAll();
+                return albums;
             }
             catch (Exception ex)
             {
@@ -24,43 +26,38 @@ namespace Prototype.API.Domain.Supervisors
             
         }
 
-        public async Task<AlbumApiModel> GetAlbumByIdAsync(int id, CancellationToken ct = default)
+        public async Task<Album> GetAlbumByIdAsync(int id, CancellationToken ct = default)
         {
-            AlbumApiModel albumApiModel = null;
-            var album = await _albumRepository.GetByIdAsync(id, ct);
-            if (album == null)
-                return albumApiModel;
-
-            albumApiModel = (await _albumRepository.GetByIdAsync(id, ct)).Convert;
-            albumApiModel.ArtistName = (await _artistRepository.GetByIdAsync(albumApiModel.ArtistId, ct)).Name;
-            return albumApiModel;
+            return await _albumRepository.GetByIdAsync(id, ct);
         }
 
-        public async Task<IEnumerable<AlbumApiModel>> GetAlbumByArtistIdAsync(int id,
+        /*
+        public async Task<IEnumerable<AlbumResource>> GetAlbumByArtistIdAsync(int id,
             CancellationToken ct = default)
         {
             var albums = await _albumRepository.GetByArtistIdAsync(id, ct);
             return albums.ConvertAll();
         }
 
-        public async Task<AlbumApiModel> AddAlbumAsync(AlbumApiModel newAlbumApiModel,
-            CancellationToken ct = default)
+        */
+
+
+        
+        public async Task<SaveAlbumResponse> AddAlbumAsync(Album album, CancellationToken ct = default)
         {
-            /*var album = new Album
+            try
             {
-                Title = newAlbumApiModel.Title,
-                ArtistId = newAlbumApiModel.ArtistId
-            };*/
-
-            var album = newAlbumApiModel.Convert;
-
-            album = await _albumRepository.AddAsync(album, ct); //TODO handle exceptions
-            newAlbumApiModel.AlbumId = album.AlbumId;
-            newAlbumApiModel.Success = true;
-            return newAlbumApiModel;
+                album = await _albumRepository.AddAsync(album, ct);
+                return new SaveAlbumResponse(album);
+            }
+            catch(Exception ex)
+            {
+                return new SaveAlbumResponse($"An error occurred when saving the album: {ex.Message}");
+            }
         }
 
-        public async Task<bool> UpdateAlbumAsync(AlbumApiModel albumApiModel,
+        /*
+        public async Task<bool> UpdateAlbumAsync(AlbumResource albumApiModel,
             CancellationToken ct = default)
         {
             var album = await _albumRepository.GetByIdAsync(albumApiModel.AlbumId, ct);
@@ -76,5 +73,7 @@ namespace Prototype.API.Domain.Supervisors
 
         public Task<bool> DeleteAlbumAsync(int id, CancellationToken ct = default)
             => _albumRepository.DeleteAsync(id, ct);
+
+    */
     }
 }

@@ -1,9 +1,13 @@
-﻿using Microsoft.AspNetCore.Authorization;
+﻿using AutoMapper;
+using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Http;
 using Microsoft.AspNetCore.Mvc;
 using Microsoft.Extensions.Logging;
 using Newtonsoft.Json;
+using Prototype.API.Dapper.Extensions;
 using Prototype.API.Domain.ApiModels;
+using Prototype.API.Domain.ApiResources;
+using Prototype.API.Domain.Entities;
 using Prototype.API.Domain.Supervisors;
 using System;
 using System.Collections.Generic;
@@ -20,11 +24,13 @@ namespace Prototype.API.Dapper.Controllers
     {
         private readonly ISupervisor _supervisor;
         private readonly ILogger<AlbumsController> _logger;
+        private readonly IMapper _mapper;
 
-        public AlbumsController(ISupervisor supervisor, ILogger<AlbumsController> logger)
+        public AlbumsController(ISupervisor supervisor, ILogger<AlbumsController> logger, IMapper mapper)
         {
             _supervisor = supervisor;
             _logger = logger;
+            _mapper = mapper;
         }
 
         /// <summary>
@@ -33,28 +39,30 @@ namespace Prototype.API.Dapper.Controllers
         /// <param name="paging">Specifiy offset and limit for data.</param>
         /// <returns>Albums lists.</returns>
         [HttpGet]
-        [ProducesResponseType(typeof(List<AlbumApiModel>), StatusCodes.Status200OK)]
-        [ProducesResponseType(typeof(List<AlbumApiModel>), StatusCodes.Status400BadRequest)]
-        [ProducesResponseType(typeof(ErrorApiModel), StatusCodes.Status500InternalServerError)]
-        public async Task<ActionResult<List<AlbumApiModel>>> Get([FromQuery] PagingApiModel paging, CancellationToken ct = default)
+        [ProducesResponseType(typeof(IEnumerable<AlbumResource>), StatusCodes.Status200OK)]
+        [ProducesResponseType(typeof(IEnumerable<AlbumResource>), StatusCodes.Status400BadRequest)]
+        [ProducesResponseType(StatusCodes.Status500InternalServerError)]
+        public async Task<ActionResult<IEnumerable<AlbumResource>>> Get([FromQuery] PagingApiModel paging, CancellationToken ct = default)
         {
-            if (paging.Offset == 0) //TODO Move to validation handler when fixed/developed
+            if (paging.Page == 0) //TODO Move to validation handler when fixed/developed
             {
                 var msg = "Offset value must be positive";
                 _logger.LogError(msg);
-                return BadRequest(new ErrorApiModel(msg));
+                return BadRequest(msg);
             }
 
-            if (paging.Limit == 0)
+            if (paging.PageSize == 0)
             {
                 var msg = "Limit value must be positive";
                 _logger.LogError(msg);
-                return BadRequest(new ErrorApiModel(msg));
+                return BadRequest(msg);
             }
 
             try
             {
-                return new ObjectResult(await _supervisor.GetAllAlbumAsync(paging, ct));
+                var albums = await _supervisor.GetAllAlbumAsync(paging, ct);
+                var resource = _mapper.Map<IEnumerable<AlbumResource>>(albums);
+                return new ObjectResult(resource);
             }
             catch (Exception ex)
             {
@@ -69,20 +77,21 @@ namespace Prototype.API.Dapper.Controllers
         /// <param name="ct"></param>
         /// <returns>Selected album.</returns>
         [HttpGet("{id}")]
-        [ProducesResponseType(typeof(AlbumApiModel), StatusCodes.Status200OK)]
-        [ProducesResponseType(typeof(ErrorApiModel), StatusCodes.Status404NotFound)]
-        [ProducesResponseType(typeof(ErrorApiModel), StatusCodes.Status500InternalServerError)]
-        public async Task<ActionResult<AlbumApiModel>> Get(int id, CancellationToken ct = default)
+        [ProducesResponseType(typeof(AlbumResource), StatusCodes.Status200OK)]
+        [ProducesResponseType(StatusCodes.Status404NotFound)]
+        [ProducesResponseType(StatusCodes.Status500InternalServerError)]
+        public async Task<ActionResult<AlbumResource>> Get(int id, CancellationToken ct = default)
         {
             try
             {
                 var album = await _supervisor.GetAlbumByIdAsync(id, ct);
                 if (album == null)
                 {
-                    return NotFound();
+                    return NotFound(); // TODO Handle with specific class to pass in
                 }
                 
-                return Ok(album);
+                var resource = _mapper.Map<AlbumResource>(album);
+                return Ok(resource);
             }
             catch (Exception ex)
             {
@@ -91,16 +100,17 @@ namespace Prototype.API.Dapper.Controllers
             }
         }
 
+        /*
         /// <summary>
         /// Retrieves all the albums given an Artist Id.
         /// </summary>
         /// <param name="ct"></param>
         /// <returns>Selected album.</returns>
         [HttpGet("artists/{id}")]
-        [ProducesResponseType(typeof(List<AlbumApiModel>), StatusCodes.Status200OK)]
+        [ProducesResponseType(typeof(List<AlbumResource>), StatusCodes.Status200OK)]
         [ProducesResponseType(typeof(ErrorApiModel), StatusCodes.Status404NotFound)]
         [ProducesResponseType(typeof(ErrorApiModel), StatusCodes.Status500InternalServerError)]
-        public async Task<ActionResult<List<AlbumApiModel>>> GetByArtistId(int id, CancellationToken ct = default)
+        public async Task<ActionResult<List<AlbumResource>>> GetByArtistId(int id, CancellationToken ct = default)
         {
             try
             {
@@ -119,6 +129,9 @@ namespace Prototype.API.Dapper.Controllers
             }
         }
 
+        */
+
+        
         /// <summary>
         /// Saves a new album.
         /// </summary>
@@ -126,37 +139,35 @@ namespace Prototype.API.Dapper.Controllers
         /// /// <param name="ct"></param>
         /// <returns>Response for the request.</returns>
         [HttpPost]
-        [ProducesResponseType(typeof(AlbumApiModel), StatusCodes.Status201Created)]
-        [ProducesResponseType(typeof(ErrorApiModel), StatusCodes.Status400BadRequest)]
-        [ProducesResponseType(typeof(ErrorApiModel), StatusCodes.Status500InternalServerError)]
+        [ProducesResponseType(typeof(AlbumResource), StatusCodes.Status201Created)]
+        [ProducesResponseType(StatusCodes.Status400BadRequest)]
+        [ProducesResponseType(StatusCodes.Status500InternalServerError)]
 
-        public async Task<ActionResult<AlbumApiModel>> Post([FromBody] AlbumApiModel input,
-            CancellationToken ct = default)
+        public async Task<ActionResult<AlbumResource>> Post([FromBody] SaveAlbumResource input, CancellationToken ct = default)  //TODO Evaluate if try/catch is needed
         {
-            try
-            {
-                if (input == null)
-                {
-                    var message = "Data input is null";
-                    _logger.LogError($"{0} {1}", StatusCodes.Status400BadRequest, message);
-                    return BadRequest(new ErrorApiModel(message));
-                }
+            //try
+            //{
+                if (!ModelState.IsValid)
+                    return BadRequest(ModelState.GetErrorMessages());
 
-                var result = await _supervisor.AddAlbumAsync(input, ct);
+                var album = _mapper.Map<Album>(input);
+                var result = await _supervisor.AddAlbumAsync(album, ct);
                 if (!result.Success)
                 {
-                    return BadRequest(new ErrorApiModel(result.Message));
+                    return BadRequest(result.Message);
                 }
 
-                return StatusCode(201, result);
-            }
-            catch (Exception ex)
-            {
-                _logger.LogError(ex.Message);
-                return StatusCode(500, ex);
-            }
+                var albumResource = _mapper.Map<Album, AlbumResource>(result.Album);
+                return StatusCode(201, albumResource);
+            //}
+            //catch (Exception ex)
+            //{
+            //    _logger.LogError(ex.Message);
+            //    return StatusCode(500, ex);
+            //}
         }
 
+        /*
         /// <summary>
         /// Updates an existing album according to an Id.
         /// </summary>
@@ -165,11 +176,11 @@ namespace Prototype.API.Dapper.Controllers
         /// <param name="ct"></param>
         /// <returns>Response for the request.</returns>
         [HttpPut("{id}")]
-        [Produces(typeof(AlbumApiModel))]
+        [Produces(typeof(AlbumResource))]
         [ProducesResponseType(StatusCodes.Status200OK)]
         [ProducesResponseType(typeof(ErrorApiModel), StatusCodes.Status404NotFound)]
         [ProducesResponseType(typeof(ErrorApiModel), StatusCodes.Status500InternalServerError)]
-        public async Task<ActionResult<AlbumApiModel>> Put(int id, [FromBody] AlbumApiModel input,
+        public async Task<ActionResult<AlbumResource>> Put(int id, [FromBody] AlbumResource input,
             CancellationToken ct = default)
         {
             try
@@ -244,5 +255,7 @@ namespace Prototype.API.Dapper.Controllers
                 return StatusCode(500, ex);
             }
         }
+
+    */
     }
 }

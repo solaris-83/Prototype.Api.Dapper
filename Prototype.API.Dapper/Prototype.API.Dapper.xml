@@ -1,0 +1,30 @@
+<?xml version="1.0"?>
+<doc>
+    <assembly>
+        <name>Prototype.API.Dapper</name>
+    </assembly>
+    <members>
+        <member name="M:Prototype.API.Dapper.Controllers.AlbumsController.Get(Prototype.API.Domain.ApiModels.PagingApiModel,System.Threading.CancellationToken)">
+            <summary>
+            Retrieves all albums.
+            </summary>
+            <param name="paging">Specifiy offset and limit for data.</param>
+            <returns>Albums lists.</returns>
+        </member>
+        <member name="M:Prototype.API.Dapper.Controllers.AlbumsController.Get(System.Int32,System.Threading.CancellationToken)">
+            <summary>
+            Retrieves an album given an Id.
+            </summary>
+            <param name="ct"></param>
+            <returns>Selected album.</returns>
+        </member>
+        <member name="M:Prototype.API.Dapper.Controllers.AlbumsController.Post(Prototype.API.Domain.ApiResources.SaveAlbumResource,System.Threading.CancellationToken)">
+            <summary>
+            Saves a new album.
+            </summary>
+            <param name="input">AlbumApiModel data.</param>
+            /// <param name="ct"></param>
+            <returns>Response for the request.</returns>
+        </member>
+    </members>
+</doc>

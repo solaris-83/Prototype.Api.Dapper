@@ -1,9 +1,14 @@
-﻿using Microsoft.AspNetCore.Authorization;
+﻿using AutoMapper;
+using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Http;
 using Microsoft.AspNetCore.Mvc;
 using Microsoft.Extensions.Logging;
 using Newtonsoft.Json;
+using Prototype.API.Dapper.Extensions;
 using Prototype.API.Domain.ApiModels;
+using Prototype.API.Domain.ApiResources;
+using Prototype.API.Domain.Entities;
+using Prototype.API.Domain.Resources;
 using Prototype.API.Domain.Supervisors;
 using System;
 using System.Collections.Generic;
@@ -21,44 +26,47 @@ namespace Prototype.API.Dapper.Controllers
     {
         private readonly ISupervisor _supervisor;
         private readonly ILogger<ArtistsController> _logger;
+        private readonly IMapper _mapper;
 
-        public ArtistsController(ISupervisor supervisor, ILogger<ArtistsController> logger)
+        public ArtistsController(ISupervisor supervisor, ILogger<ArtistsController> logger, IMapper mapper)
         {
             _supervisor = supervisor;
             _logger = logger;
+            _mapper = mapper;
         }
         
         [HttpGet]
-        [Produces(typeof(List<ArtistApiModel>))]
+        [Produces(typeof(IEnumerable<ArtistResource>))]
         [ProducesResponseType(StatusCodes.Status200OK)]
-        [ProducesResponseType(typeof(ErrorApiModel), StatusCodes.Status500InternalServerError)]
-        public async Task<ActionResult<List<ArtistApiModel>>> Get([FromQuery] PagingApiModel paging, CancellationToken ct = default)
+        [ProducesResponseType(StatusCodes.Status500InternalServerError)]
+        public async Task<ActionResult<IEnumerable<ArtistResource>>> Get([FromQuery] PagingApiModel paging, CancellationToken ct = default)
         {
-            if (paging.Offset == 0)
+            if (paging.Page == 0)
             {
                 var msg = "Offset value must be positive";
                 _logger.LogError(msg);
-                return BadRequest(new ErrorApiModel(msg));
+                return BadRequest(msg);
             }
 
-            if (paging.Limit == 0)
+            if (paging.PageSize == 0)
             {
                 var msg = "Limit value must be positive";
                 _logger.LogError(msg);
-                return BadRequest(new ErrorApiModel(msg));
+                return BadRequest(msg);
             }
 
-           
-            return new ObjectResult(await _supervisor.GetAllArtistAsync(paging, ct));
+            var artists = await _supervisor.GetAllArtistAsync(paging, ct);
+            var resource = _mapper.Map<IEnumerable<ArtistResource>>(artists);
+            return new ObjectResult(resource);
            
         }
 
         [HttpGet("{id}")]
-        [Produces(typeof(ArtistApiModel))]
+        [Produces(typeof(ArtistResource))]
         [ProducesResponseType(StatusCodes.Status200OK)]
-        [ProducesResponseType(typeof(ErrorApiModel), StatusCodes.Status404NotFound)]
-        [ProducesResponseType(typeof(ErrorApiModel), StatusCodes.Status500InternalServerError)]
-        public async Task<ActionResult<ArtistApiModel>> Get(int id, CancellationToken ct = default)
+        [ProducesResponseType(StatusCodes.Status404NotFound)]
+        [ProducesResponseType(StatusCodes.Status500InternalServerError)]
+        public async Task<ActionResult<ArtistResource>> Get(int id, CancellationToken ct = default)
         {
             try
             {
@@ -68,7 +76,8 @@ namespace Prototype.API.Dapper.Controllers
                     return NotFound();
                 }
 
-                return Ok(artist);
+                var resource = _mapper.Map<ArtistResource>(artist);
+                return Ok(resource);
             }
             catch (Exception ex)
             {
@@ -76,27 +85,31 @@ namespace Prototype.API.Dapper.Controllers
             }
         }
 
+
+        
         [HttpPost]
-        [Produces(typeof(ArtistApiModel))]
-        [ProducesResponseType(StatusCodes.Status201Created)]
-        [ProducesResponseType(typeof(ErrorApiModel), StatusCodes.Status400BadRequest)] //TODO Handle ErrrorApiModel
-        [ProducesResponseType(typeof(ErrorApiModel), StatusCodes.Status500InternalServerError)]
-        public async Task<ActionResult<ArtistApiModel>> Post([FromBody] ArtistApiModel input,
+        [ProducesResponseType(typeof(ArtistResource), StatusCodes.Status201Created)]
+        [ProducesResponseType(StatusCodes.Status400BadRequest)]
+        [ProducesResponseType(StatusCodes.Status500InternalServerError)]
+        public async Task<ActionResult<ArtistResource>> Post([FromBody] SaveArtistResource input,
             CancellationToken ct = default)
         {
-            try
-            {
-                if (input == null)
-                    return BadRequest();
+            if (!ModelState.IsValid)
+                return BadRequest(ModelState.GetErrorMessages());
 
-                return StatusCode(201, await _supervisor.AddArtistAsync(input, ct));
-            }
-            catch (Exception ex)
+            var artist = _mapper.Map<Artist>(input);
+            var result = await _supervisor.AddArtistAsync(artist, ct);
+            if (!result.Success)
             {
-                return StatusCode(500, ex);
+                return BadRequest(result.Message);
             }
+
+            var artistResource = _mapper.Map<Artist, ArtistResource>(result.Artist);
+            return StatusCode(201, artistResource);
+
         }
 
+        /*
         [HttpPut("{id}")]
         [Produces(typeof(ArtistApiModel))]
         [ProducesResponseType(StatusCodes.Status200OK)]
@@ -158,5 +171,7 @@ namespace Prototype.API.Dapper.Controllers
                 return StatusCode(500, ex);
             }
         }
+
+    */
     }
 }

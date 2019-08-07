@@ -8,8 +8,9 @@ using Microsoft.Extensions.Configuration;
 using Microsoft.Extensions.DependencyInjection;
 using Microsoft.Extensions.Logging;
 using Prototype.API.Dapper.Configurations;
-using Prototype.API.Dapper.Controllers.Config;
 using Swashbuckle.AspNetCore.Swagger;
+using AutoMapper;
+using Prototype.API.Domain.Mapping;
 
 namespace Prototype.API.Dapper
 {
@@ -30,12 +31,23 @@ namespace Prototype.API.Dapper
 
             // Validators
             //services.AddValidators(); //TODO 1) Fix validation unhandled exception otherwise 2) Handle InvalidModelStateResponseFactory via data annotations
-            services.AddMvc().SetCompatibilityVersion(CompatibilityVersion.Version_2_2)//.AddFluentValidation()
-                    .ConfigureApiBehaviorOptions(options =>
-                    {
-                        // Adds a custom error response factory when ModelState is invalid
-                        options.InvalidModelStateResponseFactory = InvalidModelStateResponseFactory.ProduceErrorResponse;
-                    });
+            services.AddMvc().SetCompatibilityVersion(CompatibilityVersion.Version_2_2);//.AddFluentValidation()
+                    //.ConfigureApiBehaviorOptions(options =>
+                    //{
+                    //    // Adds a custom error response factory when ModelState is invalid
+                    //    options.InvalidModelStateResponseFactory = InvalidModelStateResponseFactory.ProduceErrorResponse;
+                    //});
+
+            //=== Automapper configuration
+            var mappingConfig = new MapperConfiguration(mc =>
+            {
+                mc.AddProfile(new ModelToResourceProfile());
+                mc.AddProfile(new ResourceToModelProfile());
+            });
+
+            var mapper = mappingConfig.CreateMapper();
+            services.AddSingleton(mapper);
+
             services.ConfigureSupervisor()
                 .ConfigureRepositories()
                 .AddMiddleware()

@@ -1,10 +1,12 @@
 ﻿using Dapper;
 using Microsoft.Extensions.Configuration;
 using Microsoft.Extensions.DependencyInjection;
+using Microsoft.Extensions.Logging;
 using Prototype.API.Domain.DbInfoConnection;
 using System;
 using System.Data.SQLite;
 using System.IO;
+using System.Reflection;
 using System.Runtime.InteropServices;
 
 namespace Prototype.API.Dapper.Configurations
@@ -24,16 +26,16 @@ namespace Prototype.API.Dapper.Configurations
                     dBConnectionType = DBConnectionEnum.SQLite;
                     CreateDb();
                 }
-                else if (configuration.GetConnectionString("ChinookDBWindows") != null)
+                else if (configuration.GetConnectionString("SQLServerWindows") != null)
                 {
-                    connection = configuration.GetConnectionString("ChinookDBWindows");
+                    connection = configuration.GetConnectionString("SQLServerWindows");
                 }
                 else
                     throw new ArgumentException("Database string not configured");
             }
             else if (RuntimeInformation.IsOSPlatform(OSPlatform.Linux) || RuntimeInformation.IsOSPlatform(OSPlatform.OSX))
             {
-                connection = configuration.GetConnectionString("ChinookDbDocker") ??
+                connection = configuration.GetConnectionString("SQLServerDocker") ??
                                  "Server=localhost,1433;Database=Chinook;User=sa;Password=Pa55w0rd;Trusted_Connection=False;Application Name=ChinookASPNETCoreAPINTier";
             }
 
@@ -46,36 +48,36 @@ namespace Prototype.API.Dapper.Configurations
 
         private static string DbFile
         {
-            get { return Environment.CurrentDirectory + "\\SQLITEDB1.sqlite"; }
+            get { return Path.GetDirectoryName(Assembly.GetEntryAssembly().Location) + @"\SQLITEDB1.sqlite"; }
         }
 
         private static SQLiteConnection GetConnection(string dbPath = null)
-            {
-                var path = dbPath ?? DbFile;
-                return new SQLiteConnection("Data Source=" + path);
-            }
+        {
+            var path = dbPath ?? DbFile;
+            return new SQLiteConnection("Data Source=" + path);
+        }
 
         private static void CreateDb()
+        {
+            if (!File.Exists(DbFile))
             {
-                if (!File.Exists(DbFile))
+                try
                 {
-                    try
+                    using (var cnn = GetConnection())
                     {
-                        using (var cnn = GetConnection())
-                        {
-                            cnn.Open();
+                        cnn.Open();
 
-                            var createDbQuery = File.ReadAllText(@"Database\script_SQLITE.sql");
+                        var createDbQuery = File.ReadAllText(@"Database\script_SQLITE.sql");
 
-                            cnn.Execute(createDbQuery);
-                        }
+                        cnn.Execute(createDbQuery);
                     }
-                    catch (Exception ex)
-                    {
-                        
-                    }
+                }
+                catch(Exception)
+                {
+                    if (File.Exists(DbFile))
+                        File.Delete(DbFile);
                 }
             }
         }
-    
+    }
 }

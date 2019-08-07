@@ -1,11 +1,8 @@
 ﻿using Dapper.Contrib.Extensions;
-using Newtonsoft.Json;
-using Prototype.API.Domain.ApiModels;
-using Prototype.API.Domain.Converters;
 
 namespace Prototype.API.Domain.Entities
 {
-    public sealed class Album : IConvertModel<Album, AlbumApiModel>
+    public class Album
     {
         [Computed]
         [Key]
@@ -15,17 +12,8 @@ namespace Prototype.API.Domain.Entities
 
         public int ArtistId { get; set; }
 
-        //public ICollection<Track> Tracks { get; set; } = new HashSet<Track>();
         [Computed]
         public Artist Artist { get; set; }
 
-        [JsonIgnore]
-        [Computed]
-        public AlbumApiModel Convert => new AlbumApiModel
-        {
-            AlbumId = AlbumId,
-            ArtistId = ArtistId,
-            Title = Title
-        };
     }
 }
