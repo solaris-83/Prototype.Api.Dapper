@@ -37,19 +37,25 @@ namespace Prototype.API.Domain.Supervisors
             }
         }
 
-        /*
-        public async Task<bool> UpdateArtistAsync(ArtistApiModel artistViewModel,
-            CancellationToken ct = default)
+        
+        public async Task<bool> UpdateArtistAsync(Artist artist, CancellationToken ct = default)
         {
-            var artist = await _artistRepository.GetByIdAsync(artistViewModel.ArtistId, ct);
+            try
+            {
+                var output = await _artistRepository.GetByIdAsync(artist.ArtistId, ct);
 
-            if (artist == null) return false;
-            artist.ArtistId = artistViewModel.ArtistId;
-            artist.Name = artistViewModel.Name;
+                if (output == null)
+                    return false;
 
-            return await _artistRepository.UpdateAsync(artist, ct);
+                return await _artistRepository.UpdateAsync(artist, ct);
+            }
+            catch (Exception)
+            {
+                return false;
+            }
         }
 
+        /*
         public Task<bool> DeleteArtistAsync(int id, CancellationToken ct = default)
             => _artistRepository.DeleteAsync(id, ct);
             */

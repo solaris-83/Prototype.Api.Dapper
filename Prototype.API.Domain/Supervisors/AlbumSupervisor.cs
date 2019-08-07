@@ -56,21 +56,24 @@ namespace Prototype.API.Domain.Supervisors
             }
         }
 
-        /*
-        public async Task<bool> UpdateAlbumAsync(AlbumResource albumApiModel,
-            CancellationToken ct = default)
+        
+        public async Task<bool> UpdateAlbumAsync(Album album, CancellationToken ct = default)
         {
-            var album = await _albumRepository.GetByIdAsync(albumApiModel.AlbumId, ct);
+            try
+            {
+                var output = await _albumRepository.GetByIdAsync(album.AlbumId, ct);
 
-            if (album == null)
+                if (output == null)
+                    return false;
+
+                return await _albumRepository.UpdateAsync(album, ct);
+            }
+            catch(Exception)
+            {
                 return false;
-            album.AlbumId = albumApiModel.AlbumId;
-            album.Title = albumApiModel.Title;
-            album.ArtistId = albumApiModel.ArtistId;
-
-            return await _albumRepository.UpdateAsync(album, ct);
+            }
         }
-
+        /*
         public Task<bool> DeleteAlbumAsync(int id, CancellationToken ct = default)
             => _albumRepository.DeleteAsync(id, ct);
 

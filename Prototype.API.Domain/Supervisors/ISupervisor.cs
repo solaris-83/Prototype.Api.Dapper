@@ -17,19 +17,16 @@ namespace Prototype.API.Domain.Supervisors
         //Task<IEnumerable<Album>> GetAlbumByArtistIdAsync(int id, CancellationToken ct = default);
 
         Task<SaveAlbumResponse> AddAlbumAsync(Album newAlbum, CancellationToken ct = default);
+        Task<bool> UpdateAlbumAsync(Album album, CancellationToken ct = default);
 
-        //Task<bool> UpdateAlbumAsync(AlbumResource albumViewModel, CancellationToken ct = default);
         //Task<bool> DeleteAlbumAsync(int id, CancellationToken ct = default);
 
 
         //=== Artists 
         Task<IEnumerable<Artist>> GetAllArtistAsync(PagingApiModel paging, CancellationToken ct = default);
         Task<Artist> GetArtistByIdAsync(int id, CancellationToken ct = default);
-
         Task<SaveArtistResponse> AddArtistAsync(Artist newArtist, CancellationToken ct = default);
-
-        //Task<bool> UpdateArtistAsync(ArtistApiModel artistViewModel,
-        //    CancellationToken ct = default);
+        Task<bool> UpdateArtistAsync(Artist artist, CancellationToken ct = default);
 
         //Task<bool> DeleteArtistAsync(int id, CancellationToken ct = default);
 

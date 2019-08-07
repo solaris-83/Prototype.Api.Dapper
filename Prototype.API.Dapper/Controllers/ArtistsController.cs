@@ -124,32 +124,37 @@ namespace Prototype.API.Dapper.Controllers
 
         }
 
-        /*
+        /// <summary>
+        /// Update an artist.
+        /// </summary>
+        /// <param name="id">Artist identifier.</param>
+        /// <param name="input">SaveArtistResource data.</param>
+        /// <param name="ct"></param>
+        /// <returns>Response for the request.</returns>
         [HttpPut("{id}")]
-        [Produces(typeof(ArtistApiModel))]
-        [ProducesResponseType(StatusCodes.Status200OK)]
-        [ProducesResponseType(typeof(ErrorApiModel), StatusCodes.Status404NotFound)]
-        [ProducesResponseType(typeof(ErrorApiModel), StatusCodes.Status500InternalServerError)]
-        public async Task<ActionResult<ArtistApiModel>> Put(int id, [FromBody] ArtistApiModel input,
-            CancellationToken ct = default)
+        [ProducesResponseType(typeof(ArtistResource), StatusCodes.Status200OK)]
+        [ProducesResponseType(StatusCodes.Status404NotFound)]
+        [ProducesResponseType(StatusCodes.Status500InternalServerError)]
+        public async Task<ActionResult<ArtistResource>> Put(int id, [FromBody] SaveArtistResource input, CancellationToken ct = default)
         {
             try
             {
-                if (input == null)
-                    return BadRequest();
-                if (await _supervisor.GetArtistByIdAsync(id, ct) == null)
+                if (!ModelState.IsValid)
+                    return BadRequest(ModelState.GetErrorMessages());
+
+                var artist = await _supervisor.GetArtistByIdAsync(id, ct);
+                if (artist == null)
                 {
                     return NotFound();
                 }
 
-                var errors = JsonConvert.SerializeObject(ModelState.Values
-                    .SelectMany(state => state.Errors)
-                    .Select(error => error.ErrorMessage));
-                _logger.LogError(errors);
+                var updArtist = _mapper.Map<Artist>(input);
+                updArtist.ArtistId = id;
 
-                if (await _supervisor.UpdateArtistAsync(input, ct))
+                if (await _supervisor.UpdateArtistAsync(updArtist, ct))
                 {
-                    return Ok(input);
+                    var artistResource = _mapper.Map<Artist, ArtistResource>(updArtist);
+                    return Ok(artistResource);
                 }
 
                 return StatusCode(500);
@@ -160,6 +165,7 @@ namespace Prototype.API.Dapper.Controllers
             }
         }
 
+        /*
         [HttpDelete("{id}")]  //TODO Improve status codes. Avoid using 500 for reference key violation errors?
         [Produces(typeof(void))]
         [ProducesResponseType(StatusCodes.Status200OK)]

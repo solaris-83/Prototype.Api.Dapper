@@ -26,6 +26,15 @@
             /// <param name="ct"></param>
             <returns>Response for the request.</returns>
         </member>
+        <member name="M:Prototype.API.Dapper.Controllers.AlbumsController.Put(System.Int32,Prototype.API.Domain.ApiModels.AlbumResource,System.Threading.CancellationToken)">
+            <summary>
+            Updates an existing album according to an Id.
+            </summary>
+            <param name="id">Album identifier.</param>
+            <param name="input">Updated album data.</param>
+            <param name="ct"></param>
+            <returns>Response for the request.</returns>
+        </member>
         <member name="M:Prototype.API.Dapper.Controllers.ArtistsController.Get(Prototype.API.Domain.ApiModels.PagingApiModel,System.Threading.CancellationToken)">
             <summary>
             Retrieves all artists.
@@ -46,6 +55,15 @@
             </summary>
             <param name="input">SaveArtistResource data.</param>
             /// <param name="ct"></param>
+            <returns>Response for the request.</returns>
+        </member>
+        <member name="M:Prototype.API.Dapper.Controllers.ArtistsController.Put(System.Int32,Prototype.API.Domain.Resources.SaveArtistResource,System.Threading.CancellationToken)">
+            <summary>
+            Update an artist.
+            </summary>
+            <param name="id">Artist identifier.</param>
+            <param name="input">SaveArtistResource data.</param>
+            <param name="ct"></param>
             <returns>Response for the request.</returns>
         </member>
     </members>

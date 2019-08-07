@@ -44,7 +44,7 @@ namespace Prototype.API.Dapper.Controllers
         [ProducesResponseType(StatusCodes.Status500InternalServerError)]
         public async Task<ActionResult<IEnumerable<AlbumResource>>> Get([FromQuery] PagingApiModel paging, CancellationToken ct = default)
         {
-            if (paging.Page == 0) //TODO Move to validation handler when fixed/developed
+            if (paging.Page == 0)
             {
                 var msg = "Offset value must be positive";
                 _logger.LogError(msg);
@@ -167,7 +167,7 @@ namespace Prototype.API.Dapper.Controllers
             //}
         }
 
-        /*
+        
         /// <summary>
         /// Updates an existing album according to an Id.
         /// </summary>
@@ -176,40 +176,27 @@ namespace Prototype.API.Dapper.Controllers
         /// <param name="ct"></param>
         /// <returns>Response for the request.</returns>
         [HttpPut("{id}")]
-        [Produces(typeof(AlbumResource))]
-        [ProducesResponseType(StatusCodes.Status200OK)]
-        [ProducesResponseType(typeof(ErrorApiModel), StatusCodes.Status404NotFound)]
-        [ProducesResponseType(typeof(ErrorApiModel), StatusCodes.Status500InternalServerError)]
+        [ProducesResponseType(typeof(AlbumResource), StatusCodes.Status200OK)]
+        [ProducesResponseType(StatusCodes.Status404NotFound)]
+        [ProducesResponseType(StatusCodes.Status500InternalServerError)]
         public async Task<ActionResult<AlbumResource>> Put(int id, [FromBody] AlbumResource input,
             CancellationToken ct = default)
         {
             try
             {
-                //if (input == null)
-                //{
-                //    _logger.LogError($"{0}", StatusCodes.Status400BadRequest);
-                //    return BadRequest();
-                //}
+                if (!ModelState.IsValid)
+                    return BadRequest(ModelState.GetErrorMessages());
 
-                if (input == null)
-                {
-                    var message = "Data input is null";
-                    _logger.LogError($"{0} {1}", StatusCodes.Status400BadRequest, message);
-                    return BadRequest(new ErrorApiModel(message));
-                }
 
-                if (await _supervisor.GetAlbumByIdAsync(id, ct) == null)
+                var album = await _supervisor.GetAlbumByIdAsync(id, ct);
+                if (album == null)
                 {
-                    _logger.LogError($"{0}", StatusCodes.Status404NotFound);
                     return NotFound();
                 }
 
-                var errors = JsonConvert.SerializeObject(ModelState.Values
-                    .SelectMany(state => state.Errors)
-                    .Select(error => error.ErrorMessage));
-                _logger.LogError(errors);
+                var updAlbum = _mapper.Map<Album>(input);
 
-                if (await _supervisor.UpdateAlbumAsync(input, ct))
+                if (await _supervisor.UpdateAlbumAsync(updAlbum, ct))
                 {
                     return Ok(input);
                 }
@@ -223,6 +210,7 @@ namespace Prototype.API.Dapper.Controllers
             }
         }
 
+        /*
         /// <summary>
         /// Deletes a given album according to an Id.
         /// </summary>
