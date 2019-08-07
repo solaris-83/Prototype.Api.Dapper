@@ -9,7 +9,7 @@
             Retrieves all albums.
             </summary>
             <param name="paging">Specifiy offset and limit for data.</param>
-            <returns>Albums lists.</returns>
+            <returns>Albums list.</returns>
         </member>
         <member name="M:Prototype.API.Dapper.Controllers.AlbumsController.Get(System.Int32,System.Threading.CancellationToken)">
             <summary>
@@ -22,7 +22,29 @@
             <summary>
             Saves a new album.
             </summary>
-            <param name="input">AlbumApiModel data.</param>
+            <param name="input">SaveAlbumResource data.</param>
+            /// <param name="ct"></param>
+            <returns>Response for the request.</returns>
+        </member>
+        <member name="M:Prototype.API.Dapper.Controllers.ArtistsController.Get(Prototype.API.Domain.ApiModels.PagingApiModel,System.Threading.CancellationToken)">
+            <summary>
+            Retrieves all artists.
+            </summary>
+            <param name="paging">Specifiy offset and limit for data.</param>
+            <returns>Artists list.</returns>
+        </member>
+        <member name="M:Prototype.API.Dapper.Controllers.ArtistsController.Get(System.Int32,System.Threading.CancellationToken)">
+            <summary>
+            Retrieves an artist given an Id.
+            </summary>
+            <param name="ct"></param>
+            <returns>Selected artist.</returns>
+        </member>
+        <member name="M:Prototype.API.Dapper.Controllers.ArtistsController.Post(Prototype.API.Domain.Resources.SaveArtistResource,System.Threading.CancellationToken)">
+            <summary>
+            Saves a new artist.
+            </summary>
+            <param name="input">SaveArtistResource data.</param>
             /// <param name="ct"></param>
             <returns>Response for the request.</returns>
         </member>

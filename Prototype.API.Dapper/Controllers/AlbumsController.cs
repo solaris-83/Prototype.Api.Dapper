@@ -37,7 +37,7 @@ namespace Prototype.API.Dapper.Controllers
         /// Retrieves all albums.
         /// </summary>
         /// <param name="paging">Specifiy offset and limit for data.</param>
-        /// <returns>Albums lists.</returns>
+        /// <returns>Albums list.</returns>
         [HttpGet]
         [ProducesResponseType(typeof(IEnumerable<AlbumResource>), StatusCodes.Status200OK)]
         [ProducesResponseType(typeof(IEnumerable<AlbumResource>), StatusCodes.Status400BadRequest)]
@@ -131,11 +131,11 @@ namespace Prototype.API.Dapper.Controllers
 
         */
 
-        
+
         /// <summary>
         /// Saves a new album.
         /// </summary>
-        /// <param name="input">AlbumApiModel data.</param>
+        /// <param name="input">SaveAlbumResource data.</param>
         /// /// <param name="ct"></param>
         /// <returns>Response for the request.</returns>
         [HttpPost]

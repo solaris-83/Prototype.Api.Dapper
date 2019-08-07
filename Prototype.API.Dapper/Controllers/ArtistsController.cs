@@ -34,7 +34,12 @@ namespace Prototype.API.Dapper.Controllers
             _logger = logger;
             _mapper = mapper;
         }
-        
+
+        /// <summary>
+        /// Retrieves all artists.
+        /// </summary>
+        /// <param name="paging">Specifiy offset and limit for data.</param>
+        /// <returns>Artists list.</returns>
         [HttpGet]
         [Produces(typeof(IEnumerable<ArtistResource>))]
         [ProducesResponseType(StatusCodes.Status200OK)]
@@ -61,6 +66,11 @@ namespace Prototype.API.Dapper.Controllers
            
         }
 
+        /// <summary>
+        /// Retrieves an artist given an Id.
+        /// </summary>
+        /// <param name="ct"></param>
+        /// <returns>Selected artist.</returns>
         [HttpGet("{id}")]
         [Produces(typeof(ArtistResource))]
         [ProducesResponseType(StatusCodes.Status200OK)]
@@ -86,7 +96,12 @@ namespace Prototype.API.Dapper.Controllers
         }
 
 
-        
+        /// <summary>
+        /// Saves a new artist.
+        /// </summary>
+        /// <param name="input">SaveArtistResource data.</param>
+        /// /// <param name="ct"></param>
+        /// <returns>Response for the request.</returns>
         [HttpPost]
         [ProducesResponseType(typeof(ArtistResource), StatusCodes.Status201Created)]
         [ProducesResponseType(StatusCodes.Status400BadRequest)]
