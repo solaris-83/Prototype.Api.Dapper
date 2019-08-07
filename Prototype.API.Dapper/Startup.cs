@@ -31,12 +31,13 @@ namespace Prototype.API.Dapper
 
             // Validators
             //services.AddValidators(); //TODO 1) Fix validation unhandled exception otherwise 2) Handle InvalidModelStateResponseFactory via data annotations
-            services.AddMvc().SetCompatibilityVersion(CompatibilityVersion.Version_2_2);//.AddFluentValidation()
-                    //.ConfigureApiBehaviorOptions(options =>
-                    //{
-                    //    // Adds a custom error response factory when ModelState is invalid
-                    //    options.InvalidModelStateResponseFactory = InvalidModelStateResponseFactory.ProduceErrorResponse;
-                    //});
+            services.AddMvc().SetCompatibilityVersion(CompatibilityVersion.Version_2_2)//.AddFluentValidation()
+                    .ConfigureApiBehaviorOptions(options =>
+                    {
+                        // Adds a custom error response factory when ModelState is invalid
+                        options.InvalidModelStateResponseFactory = actionContext =>
+                                  new BadRequestObjectResult(actionContext.ModelState);
+                    });
 
             //=== Automapper configuration
             var mappingConfig = new MapperConfiguration(mc =>
